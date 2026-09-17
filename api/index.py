@@ -1,7 +1,9 @@
 import sys
 import os
 
-# Add root project folder to Python search path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Absolute path resolution for Vercel serverless environment
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
-from main import app # type: ignore
+from main import app  # type: ignore
