@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers & Stock — Fongoh Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #10B981;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .offer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .offer-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .offer-meta h4 {
+      margin: 0;
+      font-size: 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .offer-meta p {
+      font-size: 12px;
+      color: #aaa;
+      margin: 4px 0 8px 0;
+    }
+    .offer-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .get-btn {
+      background: #10B981;
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .get-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal-card {
+      background: #18191c;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 24px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+    }
+    .modal-badges {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .modal-flag {
+      width: 44px;
+      height: 30px;
+      border-radius: 6px;
+    }
+    .modal-msg {
+      color: #ef4444;
+      font-size: 14px;
+      margin: 16px 0;
+      font-weight: 500;
+    }
+    .cancel-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="topbar">
+  <a id="backBtnNav" href="#" class="menu-btn back-btn" aria-label="Back">‹</a>
+  <div class="titles">
+    <p class="eyebrow">Client Dashboard</p>
+    <h1>Buy Numbers</h1>
+  </div>
+</header>
+
+<main class="content">
+
+  <a id="backLink" href="#" class="back-link">‹ Back to countries</a>
+
+  <!-- Selected Platform Details -->
+  <section class="auth-card">
+    <h2 id="platformTitle" style="font-size: 22px; margin: 0 0 6px 0;">Service Name</h2>
+    <p class="row-sub">Live numbers and available inventory.</p>
+    <div style="display: flex; gap: 8px; margin-top: 10px;" id="headerTags"></div>
+  </section>
+
+  <!-- Stock Offers Grid -->
+  <section class="offer-list" id="offersContainer"></section>
+
+</main>
+
+<!-- Insufficient Balance Modal -->
+<div class="modal-overlay" id="balanceModal">
+  <div class="modal-card">
+    <div class="modal-badges">
+      <img id="modalFlag" src="" class="modal-flag" alt="Flag">
+      <span style="font-weight:700; font-size: 18px;">+</span>
+      <span id="modalServiceName" style="font-weight:600; color:#10B981;"></span>
+    </div>
+
+    <p class="modal-msg">Insufficient wallet balance. Please top up first.</p>
+    
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <a href="add-funds.html" class="get-btn" style="text-decoration:none;">Top up</a>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="offers.js"></script>
+</body>
+</html>
+

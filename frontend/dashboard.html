@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Fongoh Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .sidebar {
+    max-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding-bottom: 30px;
+  }
+  .sidebar::-webkit-scrollbar { width: 5px; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+
+  /* Dashboard Specific Card Layouts */
+  .stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted, #a1a1aa);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .icon-box-small {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .announcement-banner {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .empty-state-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted, #a1a1aa);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Sidebar Drawer -->
+  <!-- Sidebar Drawer -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
+    <div class="logo">Fongoh<span>Hub</span></div>
+    <ul>
+      <li onclick="window.location.href='dashboard.html'"><span class="dot"></span>Dashboard</li>
+      <li onclick="window.location.href='boost-history.html'"><span class="dot"></span>Boost History</li>
+      <li onclick="window.location.href='add-funds.html'"><span class="dot"></span>Add Funds</li>
+      <li onclick="window.location.href='announcements.html'"><span class="dot"></span>Announcements</li>
+      <li onclick="window.location.href='transactions.html'"><span class="dot"></span>Transactions</li>
+      <li onclick="window.location.href='referrals.html'"><span class="dot"></span>Referrals</li>
+      <li onclick="window.location.href='api.html'"><span class="dot"></span>API</li>
+      <li onclick="window.location.href='account.html'"><span class="dot"></span>Profile</li>
+
+      
+
+    <button class="submit-btn signout-btn" id="signOutBtn">Sign out</button>
+  </aside>
+
+<!-- Top bar -->
+<header class="topbar">
+  <button class="menu-btn" onclick="openSidebar()" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="titles">
+    <p class="eyebrow">Client dashboard</p>
+    <h1>Dashboard</h1>
+  </div>
+  <a href="account.html" class="avatar" id="topAvatar">--</a>
+</header>
+
+<main class="content" style="padding-bottom: 90px;">
+
+  <!-- Announcement Banner -->
+  <div class="announcement-banner">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="#10B981">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span style="font-size: 13px; font-weight: 500; color: #fff;">Fongoh Hub got you covered — Active</span>
+  </div>
+
+  <!-- Welcome Card -->
+  <section class="stat-card">
+    <span class="badge" style="background: rgba(16,185,129,0.15); color: #10B981; padding: 4px 10px; border-radius: 20px; font-size: 11px;">Client workspace</span>
+    <h2 style="font-size: 24px; margin-top: 12px; margin-bottom: 8px;" id="welcomeUser">Welcome back, User</h2>
+    <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 18px;">
+      Manage every Fongoh Hub purchase from one dashboard, including wallet balance, boost orders, number rentals, and account delivery.
+    </p>
+    <div style="display: flex; gap: 10px;">
+      <a href="index.html" class="submit-btn" style="padding: 10px 18px; text-decoration: none; font-size: 13px;">Create order ↗</a>
+      <a href="add-funds.html" class="add-funds-btn" style="padding: 10px 18px; font-size: 13px;">Add funds</a>
+    </div>
+  </section>
+
+  <!-- Balance Stat -->
+  <div class="stat-card">
+    <div class="icon-box-small">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#10B981" stroke-width="2">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+        <line x1="1" y1="10" x2="23" y2="10"></line>
+      </svg>
+    </div>
+    <div class="stat-label">Wallet Balance</div>
+    <div class="stat-value" id="dashboardBalance">$0.00</div>
+  </div>
+
+  <!-- Total Spent Stat -->
+  <div class="stat-card">
+    <div class="icon-box-small">
+      <span style="color: #10B981; font-weight: bold; font-size: 18px;">$</span>
+    </div>
+    <div class="stat-label">Total Amount Spent</div>
+    <div class="stat-value" id="totalSpent">$0.00</div>
+  </div>
+
+  <!-- Total Purchases Stat -->
+  <div class="stat-card">
+    <div class="icon-box-small">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#10B981" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+    </div>
+    <div class="stat-label">Total Purchases</div>
+    <div class="stat-value" id="totalPurchasesCount">0</div>
+    <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px;" id="purchasesBreakdown">0 numbers, 0 boosts, 0 accounts</p>
+  </div>
+
+  <!-- Recent Boost Orders -->
+  <div style="margin-top: 24px; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="font-size: 18px;">Recent boost orders</h3>
+      <a href="boost.html" style="color: #10B981; font-size: 13px; text-decoration: none;">Open boosts</a>
+    </div>
+    <div id="boostOrdersList" class="empty-state-box">
+      No boost orders yet.
+    </div>
+  </div>
+
+  <!-- Account Orders -->
+  <div style="margin-top: 24px; margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="font-size: 18px;">Account orders</h3>
+      <a href="media-accounts.html" style="color: #10B981; font-size: 13px; text-decoration: none;">Browse accounts</a>
+    </div>
+    <div id="accountOrdersList" class="empty-state-box">
+      No account purchases yet.
+    </div>
+  </div>
+
+  <!-- Latest Transactions Section -->
+  <div style="margin-top: 24px;">
+    <h3 style="font-size: 18px; margin-bottom: 4px;">Latest transactions</h3>
+    <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Wallet movements and purchases.</p>
+    <div class="row-cards" id="dashboardTransactionsList">
+      <p style="color:var(--text-muted); font-size:14px; text-align:center; padding: 16px 0;">Loading transactions...</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item active" href="dashboard.html" data-tab="rentals">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+    </span>
+    Rentals
+  </a>
+  <a class="nav-item" href="numbers.html" data-tab="numbers">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+      </svg>
+    </span>
+    Numbers
+  </a>
+  <a class="nav-item" href="boost.html" data-tab="boost">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+        <polyline points="17 6 23 6 23 12"></polyline>
+      </svg>
+    </span>
+    Boost
+  </a>
+  <a class="nav-item" href="media-accounts.html" data-tab="accounts">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </span>
+    Accounts
+  </a>
+  <a class="nav-item" href="add-funds.html" data-tab="wallet">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+        <line x1="1" y1="10" x2="23" y2="10"></line>
+      </svg>
+    </span>
+    Wallet
+  </a>
+</nav>
+
+<!-- Floating Support Buttons Container -->
+<div class="floating-support-container">
+  <!-- Telegram Button -->
+  <a href="https://t.me/Drip_30" target="_blank" rel="noopener noreferrer" class="support-btn telegram-btn" aria-label="Telegram Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.18-1.82 6.97-3.02 8.37-3.61 3.98-1.66 4.81-1.95 5.35-1.96.12 0 .38.03.55.17.14.12.18.28.2.41-.02.07-.02.21-.03.35z"/>
+    </svg>
+  </a>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/237654287110?text=Hello%20Fongoh%20Hub%20Support" target="_blank" rel="noopener noreferrer" class="support-btn whatsapp-btn" aria-label="WhatsApp Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 16.5c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32A8.188 8.188 0 0 1 3.88 11.9c0-4.5 3.66-8.16 8.16-8.16 2.18 0 4.23.85 5.77 2.39a8.11 8.11 0 0 1 2.39 5.77c0 4.5-3.66 8.16-8.15 8.16zm4.47-6.11c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.43-1.35-1.67-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.8-.2-.47-.4-.41-.54-.41-.14 0-.3 0-.46 0s-.42.06-.64.3a2.632 2.632 0 0 0-.82 1.95c0 1.15.83 2.26.95 2.42.12.16 1.63 2.49 3.95 3.49.55.24.98.38 1.32.49.56.18 1.07.15 1.47.09.45-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/>
+    </svg>
+  </a>
+</div>
+
+
+
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="dashboard-auth.js"></script>
+<script type="module" src="dashboard.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
+

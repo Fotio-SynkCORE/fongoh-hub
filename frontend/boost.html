@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boost Services — Fongoh Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .network-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .network-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .network-card.active, .network-card:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: #10B981;
+  }
+  .network-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+  .network-name {
+    font-size: 11px;
+    font-weight: 500;
+    display: block;
+    color: var(--text-main, #fff);
+  }
+  .form-select, .form-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    margin-top: 6px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+  }
+  .charge-box {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: #10B981;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<header class="topbar">
+  <a href="index.html" class="menu-btn back-btn" aria-label="Back">‹</a>
+  <div class="titles">
+    <p class="eyebrow">Client dashboard</p>
+    <h1>Boost Services</h1>
+  </div>
+</header>
+
+<main class="content">
+
+  <!-- Balance Bar -->
+  <section class="balance-card">
+    <div>
+      <p class="balance-label">Current balance</p>
+      <p class="balance-amount" id="balanceAmount">$0.00</p>
+    </div>
+  </section>
+
+  <!-- Banner Section -->
+  <section class="auth-card" style="margin-top: 16px;">
+    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">Boost services</span>
+    <h2 style="margin-top: 8px; font-size: 20px;">Social media boosting</h2>
+    <p class="row-sub" style="margin-top: 4px; line-height: 1.4;">
+      Select a network, open the live category and service dropdowns, then submit the order directly from your wallet inside the dashboard.
+    </p>
+  </section>
+
+  <!-- Platform Selector Grid -->
+  <section class="auth-card" style="margin-top: 16px;">
+    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">Choose a category</span>
+    <h3 style="margin-top: 8px; font-size: 18px;">Boost service dashboard</h3>
+    <p class="row-sub" style="font-size: 13px;">Pick a platform below to populate categories.</p>
+
+    <!-- Networks generated from data.js -->
+    <div class="network-grid" id="networkGrid"></div>
+  </section>
+
+  <!-- Create Order Section -->
+  <section class="auth-card" style="margin-top: 16px;">
+    <h3 style="font-size: 18px; margin-bottom: 12px;">✨ Create an order</h3>
+
+    <form id="orderForm">
+      <div class="field-group">
+        <label for="categorySelect">Category</label>
+        <select id="categorySelect" class="form-select">
+          <option value="">Select category</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="serviceSelect">Service name</label>
+        <select id="serviceSelect" class="form-select">
+          <option value="">Select a category above first</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="linkInput">Target Link / URL</label>
+        <input type="url" id="linkInput" class="form-input" placeholder="https://..." required>
+      </div>
+
+      <div class="charge-box">
+        <div style="font-size: 24px; color: #10B981;">$</div>
+        <div>
+          <p style="font-size: 11px; text-transform: uppercase; color: var(--text-muted, #aaa);">CHARGE</p>
+          <p id="chargeAmount" style="font-size: 20px; font-weight: 700;">$0.00</p>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="orderBtn">Order submit</button>
+    </form>
+  </section>
+
+  <!-- Details Card -->
+  <section class="auth-card" style="margin-top: 16px; margin-bottom: 80px;">
+    <h4 style="font-size: 15px;">Selected Service Info</h4>
+    <p id="serviceDescription" class="row-sub" style="margin-top: 6px; font-size: 13px;">
+      Select a package size above to view price and order notes.
+    </p>
+  </section>
+
+</main>
+
+<!-- Sidebar Drawer -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
+    <div class="logo">Fongoh<span>Hub</span></div>
+    <ul>
+      <li onclick="window.location.href='dashboard.html'"><span class="dot"></span>Dashboard</li>
+      <li onclick="window.location.href='boost-history.html'"><span class="dot"></span>Boost History</li>
+      <li onclick="window.location.href='add-funds.html'"><span class="dot"></span>Add Funds</li>
+      <li onclick="window.location.href='announcements.html'"><span class="dot"></span>Announcements</li>
+      <li onclick="window.location.href='transactions.html'"><span class="dot"></span>Transactions</li>
+      <li onclick="window.location.href='referrals.html'"><span class="dot"></span>Referrals</li>
+      <li onclick="window.location.href='api.html'"><span class="dot"></span>API</li>
+      <li onclick="window.location.href='account.html'"><span class="dot"></span>Profile</li>
+
+     
+    <button class="submit-btn signout-btn" id="signOutBtn">Sign out</button>
+  </aside>
+
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html" data-tab="rentals">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+    </span>
+    Rentals
+  </a>
+  <a class="nav-item" href="numbers.html" data-tab="numbers">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    </span>
+    Numbers
+  </a>
+  <a class="nav-item active" href="boost.html" data-tab="boost">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+    </span>
+    Boost
+  </a>
+  <a class="nav-item" href="account.html" data-tab="accounts">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </span>
+    Accounts
+  </a>
+  <a class="nav-item" href="add-funds.html" data-tab="wallet">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+    </span>
+    Wallet
+  </a>
+</nav>
+<!-- Floating Support Buttons Container -->
+<div class="floating-support-container">
+  <!-- Telegram Button -->
+  <a href="https://t.me/Drip_30" target="_blank" rel="noopener noreferrer" class="support-btn telegram-btn" aria-label="Telegram Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.18-1.82 6.97-3.02 8.37-3.61 3.98-1.66 4.81-1.95 5.35-1.96.12 0 .38.03.55.17.14.12.18.28.2.41-.02.07-.02.21-.03.35z"/>
+    </svg>
+  </a>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/237654287110?text=Hello%20Fongoh%20Hub%20Support" target="_blank" rel="noopener noreferrer" class="support-btn whatsapp-btn" aria-label="WhatsApp Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 16.5c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32A8.188 8.188 0 0 1 3.88 11.9c0-4.5 3.66-8.16 8.16-8.16 2.18 0 4.23.85 5.77 2.39a8.11 8.11 0 0 1 2.39 5.77c0 4.5-3.66 8.16-8.15 8.16zm4.47-6.11c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.43-1.35-1.67-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.8-.2-.47-.4-.41-.54-.41-.14 0-.3 0-.46 0s-.42.06-.64.3a2.632 2.632 0 0 0-.82 1.95c0 1.15.83 2.26.95 2.42.12.16 1.63 2.49 3.95 3.49.55.24.98.38 1.32.49.56.18 1.07.15 1.47.09.45-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/>
+    </svg>
+  </a>
+</div>
+
+
+<script type="module" src="boost.js"></script>
+</body>
+</html>
+

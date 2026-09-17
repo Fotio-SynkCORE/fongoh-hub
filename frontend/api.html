@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API — Fongoh Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .sidebar { max-height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; padding-bottom: 30px; }
+  .api-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  .btn-green { background: #10B981; color: #000; font-weight: 600; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: opacity 0.2s; }
+  .btn-green:hover { opacity: 0.9; }
+  .btn-green:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-revoke { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; }
+  .btn-revoke:hover { background: rgba(239, 68, 68, 0.25); }
+  .copy-banner { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 18px; margin-bottom: 16px; display: none; }
+  .copy-banner.active { display: block; }
+  .key-input-box { display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 8px 12px; font-family: monospace; font-size: 13px; color: #fff; margin: 12px 0; }
+  .badge-active { background: #10B981; color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+  .badge-revoked { background: rgba(255, 255, 255, 0.1); color: #aaa; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+  .key-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Sidebar Drawer -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
+    <div class="logo">Fongoh<span>Hub</span></div>
+    <ul>
+      <li onclick="window.location.href='dashboard.html'"><span class="dot"></span>Dashboard</li>
+      <li onclick="window.location.href='boost-history.html'"><span class="dot"></span>Boost History</li>
+      <li onclick="window.location.href='add-funds.html'"><span class="dot"></span>Add Funds</li>
+      <li onclick="window.location.href='announcements.html'"><span class="dot"></span>Announcements</li>
+      <li onclick="window.location.href='transactions.html'"><span class="dot"></span>Transactions</li>
+      <li onclick="window.location.href='referrals.html'"><span class="dot"></span>Referrals</li>
+      <li onclick="window.location.href='api.html'"><span class="dot"></span>API</li>
+      <li onclick="window.location.href='account.html'"><span class="dot"></span>Profile</li>
+
+      
+    <button class="submit-btn signout-btn" id="signOutBtn">Sign out</button>
+  </aside>
+
+<!-- Topbar -->
+<header class="topbar">
+  <button class="menu-btn" onclick="openSidebar()" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="titles">
+    <p class="eyebrow">Client dashboard</p>
+    <h1>API</h1>
+  </div>
+  <a href="account.html" class="avatar" id="topAvatar">--</a>
+</header>
+
+<main class="content" style="padding-bottom: 90px;">
+  
+  <div style="margin-bottom: 20px;">
+    <h2 style="font-size: 24px; margin-bottom: 6px;">API</h2>
+    <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5;">
+      Generate a personal API key to buy numbers, boost services, and accounts programmatically from your own website — every purchase lands in this wallet, same as buying here.
+    </p>
+  </div>
+
+  <!-- Green Banner Displaying Fresh Raw Key from Python Backend -->
+  <div class="copy-banner" id="copyBanner">
+    <div style="display: flex; align-items: center; gap: 8px; color: #10B981; font-weight: 600; font-size: 13px;">
+      🛡️ Copy your API key now — it won't be shown again
+    </div>
+    <div class="key-input-box">
+      <span id="secretKeyDisplay" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">gnk_live_...</span>
+      <button class="submit-btn" id="copyKeyBtn" style="width: auto; padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">📋 Copy</button>
+    </div>
+    <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">
+      Store this key in your own server-side environment. Anyone with this key can spend from your wallet balance — never share it or embed it in browser/client-side code.
+    </p>
+  </div>
+
+  <!-- Status Card -->
+  <div class="api-card">
+    <div style="display: flex; gap: 12px; align-items: flex-start;">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #10B981;">
+        🔑
+      </div>
+      <div>
+        <h3 id="keyStatusTitle" style="font-size: 16px; margin-bottom: 4px;">Loading status...</h3>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
+          Only the most recently generated key works — older ones are kept below for reference.
+        </p>
+        <button class="btn-green" id="generateKeyBtn">
+          🔄 <span id="generateBtnText">Generate key</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History List -->
+  <div id="keysHistoryList"></div>
+
+  <!-- Doc Link -->
+  <a href="http://127.0.0.1:8000/docs" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #fff; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; font-size: 13px; font-weight: 600; margin-top: 10px;">
+    View API documentation ↗
+  </a>
+
+</main>
+
+<!-- Floating Support Buttons Container -->
+<div class="floating-support-container">
+  <!-- Telegram Button -->
+  <a href="https://t.me/Drip_30" target="_blank" rel="noopener noreferrer" class="support-btn telegram-btn" aria-label="Telegram Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.18-1.82 6.97-3.02 8.37-3.61 3.98-1.66 4.81-1.95 5.35-1.96.12 0 .38.03.55.17.14.12.18.28.2.41-.02.07-.02.21-.03.35z"/>
+    </svg>
+  </a>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/237654287110?text=Hello%20Fongoh%20Hub%20Support" target="_blank" rel="noopener noreferrer" class="support-btn whatsapp-btn" aria-label="WhatsApp Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 16.5c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32A8.188 8.188 0 0 1 3.88 11.9c0-4.5 3.66-8.16 8.16-8.16 2.18 0 4.23.85 5.77 2.39a8.11 8.11 0 0 1 2.39 5.77c0 4.5-3.66 8.16-8.15 8.16zm4.47-6.11c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.43-1.35-1.67-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.8-.2-.47-.4-.41-.54-.41-.14 0-.3 0-.46 0s-.42.06-.64.3a2.632 2.632 0 0 0-.82 1.95c0 1.15.83 2.26.95 2.42.12.16 1.63 2.49 3.95 3.49.55.24.98.38 1.32.49.56.18 1.07.15 1.47.09.45-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/>
+    </svg>
+  </a>
+</div>
+
+
+
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="api.js"></script>
+</body>
+</html>

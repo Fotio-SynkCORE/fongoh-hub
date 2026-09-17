@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fongoh Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Enable vertical scroll inside the sidebar drawer */
+    .sidebar {
+      max-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+      padding-bottom: 30px;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    /* Favorites section Styling */
+    .fav-heart-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      line-height: 1;
+      transition: transform 0.15s ease;
+    }
+    .fav-heart-btn:active {
+      transform: scale(1.2);
+    }
+    .favorites-dropdown {
+      display: none;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      margin-top: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .favorites-dropdown.open {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating background orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Sidebar Drawer -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
+    <div class="logo">Fongoh<span>Hub</span></div>
+    <ul>
+      <li onclick="window.location.href='dashboard.html'"><span class="dot"></span>Dashboard</li>
+      <li onclick="window.location.href='boost-history.html'"><span class="dot"></span>Boost History</li>
+      <li onclick="window.location.href='add-funds.html'"><span class="dot"></span>Add Funds</li>
+      <li onclick="window.location.href='announcements.html'"><span class="dot"></span>Announcements</li>
+      <li onclick="window.location.href='transactions.html'"><span class="dot"></span>Transactions</li>
+      <li onclick="window.location.href='referrals.html'"><span class="dot"></span>Referrals</li>
+      <li onclick="window.location.href='api.html'"><span class="dot"></span>API</li>
+      <li onclick="window.location.href='account.html'"><span class="dot"></span>Profile</li>
+
+     
+
+    <button class="submit-btn signout-btn" id="signOutBtn">Sign out</button>
+  </aside>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <button class="menu-btn" onclick="openSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="titles">
+      <p class="eyebrow">Client dashboard</p>
+      <h1>Rental Numbers</h1>
+    </div>
+
+    <a href="account.html" class="avatar" id="topAvatar">F</a>
+  </header>
+
+  <main class="content">
+
+    <!-- Balance card -->
+    <section class="balance-card">
+      <div>
+        <p class="balance-label">Wallet balance</p>
+        <p class="balance-amount" id="balanceAmount">0.00 XAF</p>
+      </div>
+      <a href="add-funds.html" class="add-funds-btn">+ Add funds</a>
+    </section>
+
+    <!-- Rental history / favorites -->
+    <div class="row-cards">
+      <!-- Rental History Row -> Opens Transactions/History -->
+      <div class="glass-row" onclick="window.location.href='transactions.html'" style="cursor: pointer;">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </div>
+        <div class="row-body">
+          <div class="row-title">Rental history <span class="badge" id="rentalHistoryBadge">0</span></div>
+          <p class="row-sub">Every number you've rented or bought a code for</p>
+        </div>
+        <div class="chevron">›</div>
+      </div>
+
+      <!-- Favorites Row (Interactive) -->
+      <div class="glass-row" id="favoritesRow" style="cursor: pointer;">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#FF2D55" stroke="#FF2D55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </div>
+        <div class="row-body">
+          <div class="row-title">Favorites <span class="badge" id="favoritesBadge">0/0</span></div>
+        </div>
+        <div class="chevron" id="favChevron">⌄</div>
+      </div>
+
+      <!-- Dynamic Favorites Drawer -->
+      <div class="favorites-dropdown" id="favoritesDropdown">
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Your Liked Services:</p>
+        <div id="favoritesList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="chooseService">Choose a service</h2>
+
+    <div class="search-bar">
+      <span class="search-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </span>
+      <input id="searchInput" type="text" placeholder="Search by service" oninput="filterServices()">
+    </div>
+
+    <div class="service-list" id="serviceList"></div>
+
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <a class="nav-item active" href="index.html" data-tab="rentals">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+      </span>
+      Rentals
+    </a>
+
+    <a class="nav-item" href="numbers.html" data-tab="numbers">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+      </span>
+      Numbers
+    </a>
+
+    <a class="nav-item" href="boost.html" data-tab="boost">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      </span>
+      Boost
+    </a>
+
+    <a class="nav-item" href="media-accounts.html" data-tab="accounts">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </span>
+      Accounts
+    </a>
+
+    <a class="nav-item" href="add-funds.html" data-tab="wallet">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+      </span>
+      Wallet
+    </a>
+  </nav>
+
+  <!-- Floating Support Buttons Container -->
+<div class="floating-support-container">
+  <!-- Telegram Button -->
+  <a href="https://t.me/Drip_30" target="_blank" rel="noopener noreferrer" class="support-btn telegram-btn" aria-label="Telegram Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.18-1.82 6.97-3.02 8.37-3.61 3.98-1.66 4.81-1.95 5.35-1.96.12 0 .38.03.55.17.14.12.18.28.2.41-.02.07-.02.21-.03.35z"/>
+    </svg>
+  </a>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/237654287110?text=Hello%20Fongoh%20Hub%20Support" target="_blank" rel="noopener noreferrer" class="support-btn whatsapp-btn" aria-label="WhatsApp Support">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 16.5c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32A8.188 8.188 0 0 1 3.88 11.9c0-4.5 3.66-8.16 8.16-8.16 2.18 0 4.23.85 5.77 2.39a8.11 8.11 0 0 1 2.39 5.77c0 4.5-3.66 8.16-8.15 8.16zm4.47-6.11c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.43-1.35-1.67-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.8-.2-.47-.4-.41-.54-.41-.14 0-.3 0-.46 0s-.42.06-.64.3a2.632 2.632 0 0 0-.82 1.95c0 1.15.83 2.26.95 2.42.12.16 1.63 2.49 3.95 3.49.55.24.98.38 1.32.49.56.18 1.07.15 1.47.09.45-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/>
+    </svg>
+  </a>
+</div>
+
+
+
+  <!-- ES Modules -->
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
+
