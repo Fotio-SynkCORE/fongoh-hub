@@ -1,5 +1,4 @@
-
-
+// Verification & Social Platform Master Services Data
 export const services = [
   {
     slug: "whatsapp-1",
@@ -117,10 +116,55 @@ export const services = [
     badgeBg: "#F5F5F7",
     iconColor: "#000000",
     iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.18c.68-.82 1.14-1.97.98-3.18-1 .04-2.22.67-2.92 1.49-.63.73-1.18 1.9-1.03 3.05 1.12.09 2.29-.54 2.97-1.36z"/></svg>`
+  },
+  {
+    slug: "twitter",
+    name: "Twitter | X",
+    count: 1800,
+    price: 2.10,
+    badgeBg: "#E8F5FD",
+    iconColor: "#1DA1F2",
+    iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`
+  },
+  {
+    slug: "potato",
+    name: "Potato Chat",
+    count: 800,
+    price: 1.50,
+    badgeBg: "#EFF6FF",
+    iconColor: "#2563EB",
+    iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>`
+  },
+  {
+    slug: "youtube",
+    name: "YouTube",
+    count: 1600,
+    price: 3.20,
+    badgeBg: "#FFEBEE",
+    iconColor: "#FF0000",
+    iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`
+  },
+  {
+    slug: "canva",
+    name: "Canva",
+    count: 1200,
+    price: 2.50,
+    badgeBg: "#E0F7FA",
+    iconColor: "#00C4CC",
+    iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-2h2v2zm0-4h-2V7h2v5.5z"/></svg>`
+  },
+  {
+    slug: "spotify",
+    name: "Spotify",
+    count: 2200,
+    price: 1.70,
+    badgeBg: "#E8F5E9",
+    iconColor: "#1DB954",
+    iconSvg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.376 0 0 5.377 0 12s5.376 12 12 12 12-5.377 12-12S18.624 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.899 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.18-.1.2-1.02-.42-.18-.6.42-1.14 1.02-1.32 4.2-1.26 11.28-1.02 15.72 1.62.54.301.72.96.42 1.5-.3.54-.96.72-1.5.36z"/></svg>`
   }
 ];
 
-// Exact Countries array from user screenshots
+// Exact Countries array
 export const countries = [
   { flag: "🇺🇸", name: "USA", count: 1, exactPrice: 4.76 },
   { flag: "🇫🇷", name: "France", count: 1, exactPrice: 9.26 },
@@ -140,6 +184,7 @@ export const countries = [
   { flag: "🇨🇿", name: "Czechia", count: 1, exactPrice: 5.08 }
 ];
 
+// Helper lookup function for services array
 export function getServiceBySlug(slug) {
   return services.find((s) => s.slug === slug);
 }
@@ -195,5 +240,51 @@ export const boostServices = [
       { qty: 5000, price: 3.50 },
       { qty: 10000, price: 6.00 }
     ]
+  },
+  {
+    slug: "twitter-followers",
+    serviceSlug: "twitter",
+    label: "Twitter / X Followers & Retweets",
+    tiers: [
+      { qty: 1000, price: 3.00 },
+      { qty: 5000, price: 14.00 }
+    ]
+  },
+  {
+    slug: "potato-chat-members",
+    serviceSlug: "potato",
+    label: "Potato Chat Channel Members",
+    tiers: [
+      { qty: 1000, price: 1.50 },
+      { qty: 5000, price: 7.00 }
+    ]
+  },
+  {
+    slug: "youtube-subscribers",
+    serviceSlug: "youtube",
+    label: "YouTube Subscribers & Views",
+    tiers: [
+      { qty: 500, price: 5.00 },
+      { qty: 1000, price: 9.50 }
+    ]
+  },
+  {
+    slug: "canva-team-invite",
+    serviceSlug: "canva",
+    label: "Canva Pro Invite / Team Access",
+    tiers: [
+      { qty: 1, price: 3.00 },
+      { qty: 5, price: 12.00 }
+    ]
+  },
+  {
+    slug: "spotify-plays",
+    serviceSlug: "spotify",
+    label: "Spotify Plays & Monthly Listeners",
+    tiers: [
+      { qty: 1000, price: 1.80 },
+      { qty: 5000, price: 8.00 }
+    ]
   }
 ];
+

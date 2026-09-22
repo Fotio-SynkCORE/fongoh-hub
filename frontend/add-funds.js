@@ -148,8 +148,8 @@ document.getElementById("paymentForm")?.addEventListener("submit", async (e) => 
   const payBtn = document.getElementById("paySubmitBtn");
   const amount = parseFloat(amountInput.value);
 
-  if (isNaN(amount) || amount < 2000) {
-    alert("Minimum top-up amount is 2000 XAF.");
+  if (isNaN(amount) || amount < 500) {
+    alert("Minimum top-up amount is 500 XAF.");
     return;
   }
 
@@ -157,7 +157,7 @@ document.getElementById("paymentForm")?.addEventListener("submit", async (e) => 
   payBtn.innerText = "Connecting to Fapshi...";
 
   try {
-    // 1. Store Pending Transaction record in Firestore (phone included to prevent undefined errors)
+    // 1. Store Pending Transaction record in Firestore
     await createTopUpRequest(activeUser.uid, {
       amount: amount,
       currency: "XAF",

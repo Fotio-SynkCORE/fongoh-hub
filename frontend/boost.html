@@ -8,75 +8,142 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-  .network-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-top: 14px;
+  /* Base Navigation & View Containers */
+  .view-step {
+    display: none;
+    animation: fadeIn 0.25s ease-in-out;
   }
-  .network-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px 6px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .network-card.active, .network-card:hover {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: #10B981;
-  }
-  .network-icon-box {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 6px;
-  }
-  .network-name {
-    font-size: 11px;
-    font-weight: 500;
+  .view-step.active {
     display: block;
-    color: var(--text-main, #fff);
   }
-  .form-select, .form-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(0,0,0,0.25);
-    color: #fff;
-    margin-top: 6px;
-    margin-bottom: 14px;
-    box-sizing: border-box;
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  .charge-box {
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    border-radius: 12px;
-    padding: 14px;
+
+  /* Back Button Header */
+  .step-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
-  .submit-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 10px;
-    border: none;
-    background: #10B981;
+  .back-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: #fff;
-    font-weight: 600;
-    font-size: 15px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    font-size: 18px;
+  }
+
+  /* Search Bar */
+  .search-box {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+  }
+
+  /* Platform & Category List Group */
+  .list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .list-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .list-item:hover, .list-item:active {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+  .list-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .icon-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .list-item-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .arrow-icon {
+    color: var(--text-muted, #888);
+    font-size: 18px;
+  }
+
+  /* Preset Quantity Grid for Order Page */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 20px;
+  }
+  .preset-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .preset-btn.active {
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.15);
+  }
+
+  .badge-tag {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    display: inline-block;
+    margin-top: 6px;
+  }
+
+  .price-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 16px;
   }
 </style>
 </head>
@@ -87,7 +154,7 @@
 <div class="orb orb-3"></div>
 
 <header class="topbar">
-  <a href="index.html" class="menu-btn back-btn" aria-label="Back">‹</a>
+  <button class="menu-btn" onclick="openSidebar()" aria-label="Open menu">☰</button>
   <div class="titles">
     <p class="eyebrow">Client dashboard</p>
     <h1>Boost Services</h1>
@@ -96,7 +163,7 @@
 
 <main class="content">
 
-  <!-- Balance Bar -->
+  <!-- Balance Card -->
   <section class="balance-card">
     <div>
       <p class="balance-label">Current balance</p>
@@ -104,90 +171,92 @@
     </div>
   </section>
 
-  <!-- Banner Section -->
-  <section class="auth-card" style="margin-top: 16px;">
-    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">Boost services</span>
-    <h2 style="margin-top: 8px; font-size: 20px;">Social media boosting</h2>
-    <p class="row-sub" style="margin-top: 4px; line-height: 1.4;">
-      Select a network, open the live category and service dropdowns, then submit the order directly from your wallet inside the dashboard.
-    </p>
+  <!-- STEP 1: Select Platform -->
+  <section id="stepPlatforms" class="view-step active" style="margin-top: 16px;">
+    <input type="text" id="platformSearch" class="search-box" placeholder="🔍 Search platform...">
+    <div class="list-container" id="platformListContainer"></div>
   </section>
 
-  <!-- Platform Selector Grid -->
-  <section class="auth-card" style="margin-top: 16px;">
-    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">Choose a category</span>
-    <h3 style="margin-top: 8px; font-size: 18px;">Boost service dashboard</h3>
-    <p class="row-sub" style="font-size: 13px;">Pick a platform below to populate categories.</p>
-
-    <!-- Networks generated from data.js -->
-    <div class="network-grid" id="networkGrid"></div>
+  <!-- STEP 2: Select Category -->
+  <section id="stepCategories" class="view-step" style="margin-top: 16px;">
+    <div class="step-header">
+      <button class="back-btn" onclick="goToStep('stepPlatforms')">←</button>
+      <div>
+        <p class="row-sub" style="font-size: 12px; margin: 0;">Select category</p>
+        <h3 id="selectedPlatformHeader" style="font-size: 18px; margin: 0;">--</h3>
+      </div>
+    </div>
+    <div class="list-container" id="categoryListContainer"></div>
   </section>
 
-  <!-- Create Order Section -->
-  <section class="auth-card" style="margin-top: 16px;">
-    <h3 style="font-size: 18px; margin-bottom: 12px;">✨ Create an order</h3>
+  <!-- STEP 3: Select Service Package -->
+  <section id="stepServices" class="view-step" style="margin-top: 16px;">
+    <div class="step-header">
+      <button class="back-btn" onclick="goToStep('stepCategories')">←</button>
+      <div>
+        <p class="row-sub" style="font-size: 12px; margin: 0;">Select service</p>
+        <h3 id="selectedCategoryHeader" style="font-size: 16px; margin: 0;">--</h3>
+      </div>
+    </div>
+    <div class="list-container" id="serviceListContainer"></div>
+  </section>
+
+  <!-- STEP 4: Create Order Page -->
+  <section id="stepOrderForm" class="view-step" style="margin-top: 16px; margin-bottom: 80px;">
+    <div class="step-header">
+      <button class="back-btn" onclick="goToStep('stepServices')">←</button>
+      <div>
+        <p class="row-sub" style="font-size: 12px; margin: 0;">Creating order</p>
+        <h3 id="orderServiceTitle" style="font-size: 16px; margin: 0;">--</h3>
+      </div>
+    </div>
 
     <form id="orderForm">
-      <div class="field-group">
-        <label for="categorySelect">Category</label>
-        <select id="categorySelect" class="form-select">
-          <option value="">Select category</option>
-        </select>
+      <label style="font-size: 13px; color: var(--text-muted, #aaa);">Amount</label>
+      <div class="preset-grid" id="presetGrid"></div>
+
+      <div id="customQtyContainer" style="display: none; margin-bottom: 16px;">
+        <label for="customQtyInput" style="font-size: 13px;">Enter Custom Quantity</label>
+        <input type="number" id="customQtyInput" class="form-input" placeholder="e.g. 1500" min="1">
       </div>
 
       <div class="field-group">
-        <label for="serviceSelect">Service name</label>
-        <select id="serviceSelect" class="form-select">
-          <option value="">Select a category above first</option>
-        </select>
-      </div>
-
-      <div class="field-group">
-        <label for="linkInput">Target Link / URL</label>
+        <label for="linkInput" style="font-size: 13px;">Link / URL</label>
         <input type="url" id="linkInput" class="form-input" placeholder="https://..." required>
       </div>
 
-      <div class="charge-box">
-        <div style="font-size: 24px; color: #10B981;">$</div>
-        <div>
-          <p style="font-size: 11px; text-transform: uppercase; color: var(--text-muted, #aaa);">CHARGE</p>
-          <p id="chargeAmount" style="font-size: 20px; font-weight: 700;">$0.00</p>
-        </div>
+      <div class="price-summary">
+        <span style="color: var(--text-muted, #aaa);">Amount</span>
+        <span id="summaryQty" style="font-weight: 600;">0</span>
+      </div>
+      <div class="price-summary" style="margin-top: 0;">
+        <span style="color: var(--text-muted, #aaa);">Price</span>
+        <span id="summaryPrice" style="font-size: 20px; font-weight: 700; color: #10B981;">$0.00</span>
       </div>
 
-      <button type="submit" class="submit-btn" id="orderBtn">Order submit</button>
+      <button type="submit" class="submit-btn" id="orderBtn" style="margin-top: 16px;">Create order</button>
     </form>
-  </section>
-
-  <!-- Details Card -->
-  <section class="auth-card" style="margin-top: 16px; margin-bottom: 80px;">
-    <h4 style="font-size: 15px;">Selected Service Info</h4>
-    <p id="serviceDescription" class="row-sub" style="margin-top: 6px; font-size: 13px;">
-      Select a package size above to view price and order notes.
-    </p>
   </section>
 
 </main>
 
 <!-- Sidebar Drawer -->
-  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-  <aside class="sidebar" id="sidebar">
-    <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
-    <div class="logo">Fongoh<span>Hub</span></div>
-    <ul>
-      <li onclick="window.location.href='dashboard.html'"><span class="dot"></span>Dashboard</li>
-      <li onclick="window.location.href='boost-history.html'"><span class="dot"></span>Boost History</li>
-      <li onclick="window.location.href='add-funds.html'"><span class="dot"></span>Add Funds</li>
-      <li onclick="window.location.href='announcements.html'"><span class="dot"></span>Announcements</li>
-      <li onclick="window.location.href='transactions.html'"><span class="dot"></span>Transactions</li>
-      <li onclick="window.location.href='referrals.html'"><span class="dot"></span>Referrals</li>
-      <li onclick="window.location.href='api.html'"><span class="dot"></span>API</li>
-      <li onclick="window.location.href='account.html'"><span class="dot"></span>Profile</li>
-
-     
-    <button class="submit-btn signout-btn" id="signOutBtn">Sign out</button>
-  </aside>
-
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <button class="close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
+  <div class="logo">Fongoh<span>Hub</span></div>
+  <ul>
+    <li onclick="window.location.href='dashboard.html'"><span class="dot"></span>Dashboard</li>
+    <li onclick="window.location.href='boost-history.html'"><span class="dot"></span>Boost History</li>
+    <li onclick="window.location.href='add-funds.html'"><span class="dot"></span>Add Funds</li>
+    <li onclick="window.location.href='announcements.html'"><span class="dot"></span>Announcements</li>
+    <li onclick="window.location.href='transactions.html'"><span class="dot"></span>Transactions</li>
+    <li onclick="window.location.href='referrals.html'"><span class="dot"></span>Referrals</li>
+    <li onclick="window.location.href='api.html'"><span class="dot"></span>API</li>
+    <li onclick="window.location.href='account.html'"><span class="dot"></span>Profile</li>
+  </ul>
+  <button class="submit-btn signout-btn" id="signOutBtn">Sign out</button>
+</aside>
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
@@ -209,7 +278,7 @@
     </span>
     Boost
   </a>
-  <a class="nav-item" href="account.html" data-tab="accounts">
+  <a class="nav-item" href="marketplace.html" data-tab="accounts">
     <span class="nav-icon">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     </span>
@@ -222,23 +291,21 @@
     Wallet
   </a>
 </nav>
-<!-- Floating Support Buttons Container -->
+
+<!-- Floating Support Buttons -->
 <div class="floating-support-container">
-  <!-- Telegram Button -->
   <a href="https://t.me/Drip_30" target="_blank" rel="noopener noreferrer" class="support-btn telegram-btn" aria-label="Telegram Support">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.18-1.82 6.97-3.02 8.37-3.61 3.98-1.66 4.81-1.95 5.35-1.96.12 0 .38.03.55.17.14.12.18.28.2.41-.02.07-.02.21-.03.35z"/>
     </svg>
   </a>
 
-  <!-- WhatsApp Button -->
   <a href="https://wa.me/237654287110?text=Hello%20Fongoh%20Hub%20Support" target="_blank" rel="noopener noreferrer" class="support-btn whatsapp-btn" aria-label="WhatsApp Support">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
       <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 16.5c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32A8.188 8.188 0 0 1 3.88 11.9c0-4.5 3.66-8.16 8.16-8.16 2.18 0 4.23.85 5.77 2.39a8.11 8.11 0 0 1 2.39 5.77c0 4.5-3.66 8.16-8.15 8.16zm4.47-6.11c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.43-1.35-1.67-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.8-.2-.47-.4-.41-.54-.41-.14 0-.3 0-.46 0s-.42.06-.64.3a2.632 2.632 0 0 0-.82 1.95c0 1.15.83 2.26.95 2.42.12.16 1.63 2.49 3.95 3.49.55.24.98.38 1.32.49.56.18 1.07.15 1.47.09.45-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/>
     </svg>
   </a>
 </div>
-
 
 <script type="module" src="boost.js"></script>
 </body>

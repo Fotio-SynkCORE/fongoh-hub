@@ -22,9 +22,9 @@ def generate_key(uid: str = Depends(verify_token)):
     try:
         db = firestore.client()
         
-        raw_key = f"gnk_live_{secrets.token_hex(16)}"
+        raw_key = f"fhk_live_{secrets.token_hex(16)}"
         key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
-        masked = f"gnk_live_{raw_key[9:16]}••••••••••••••••"
+        masked = f"fhk_live_{raw_key[9:16]}••••••••••••••••"
 
         # Revoke existing active keys
         existing = db.collection("api_keys").where("userId", "==", uid).where("status", "==", "active").stream()
