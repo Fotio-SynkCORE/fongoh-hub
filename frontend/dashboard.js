@@ -147,3 +147,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeBtn) closeBtn.addEventListener("click", closeNavbar);
 });
 
+// Sign Out Handler
+const signOutBtn = document.getElementById("signOutBtn");
+if (signOutBtn) {
+  signOutBtn.addEventListener("click", () => {
+    // Clear local session storage if needed
+    localStorage.clear();
+    
+    // Redirect to index.html
+    window.location.href = "index.html";
+  });
+}
+

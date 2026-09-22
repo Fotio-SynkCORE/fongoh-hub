@@ -196,7 +196,7 @@ window.closeSidebar = closeSidebar;
 // Sign Out Handler
 document.getElementById("signOutBtn")?.addEventListener("click", async () => {
   await signOut(auth);
-  window.location.replace("welcome.html");
+  window.location.replace("index.html");
 });
 
 // Bottom nav highlight

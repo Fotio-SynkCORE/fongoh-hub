@@ -96,7 +96,7 @@ document.getElementById("updatePasswordBtn")?.addEventListener("click", async ()
 document.getElementById("signOutBtn")?.addEventListener("click", async () => {
   try {
     await signOut(auth);
-    window.location.replace("welcome.html"); // Change "welcome.html" if your welcome page filename is different
+    window.location.replace("index.html"); // Change "welcome.html" if your welcome page filename is different
   } catch (err) {
     console.error("Error signing out:", err);
   }

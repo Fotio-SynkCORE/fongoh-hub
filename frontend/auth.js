@@ -70,7 +70,7 @@ async function handleGoogleAuth() {
   try {
     const result = await signInWithPopup(auth, provider);
     await ensureUserDoc(result.user);
-    window.location.href = "index.html";
+    window.location.href = "rentals.html";
   } catch (error) {
     console.error("Google Auth Error:", error);
     showError(formatFirebaseError(error.code || error.message));
@@ -119,7 +119,7 @@ document.getElementById("authForm")?.addEventListener("submit", async (e) => {
     }
 
     // Redirect to main dashboard
-    window.location.href = "index.html";
+    window.location.href = "rentals.html";
 
   } catch (err) {
     console.error("Firebase Auth Error:", err);
