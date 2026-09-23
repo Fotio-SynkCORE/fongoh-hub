@@ -2,11 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "*.html",
+      "src": "frontend/*.html",
       "use": "@vercel/static"
     },
     {
-      "src": "*.js",
+      "src": "frontend/*.js",
       "use": "@vercel/static"
     },
     {
@@ -21,7 +21,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/frontend/$1"
     }
   ]
 }
