@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin
@@ -6,15 +7,25 @@ from firebase_admin import credentials
 
 # Initialize Firebase Admin AT STARTUP
 if not firebase_admin._apps:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    key_path = os.path.join(os.path.dirname(base_dir), "serviceAccountKey.json")
+    # 1. Try reading from Railway Environment Variable
+    firebase_json_env = os.getenv("FIREBASE_SERVICE_ACCOUNT")
     
-    if os.path.exists(key_path):
-        cred = credentials.Certificate(key_path)
+    if firebase_json_env:
+        cred_dict = json.loads(firebase_json_env)
+        cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
-        print("Firebase Admin initialized successfully.")
+        print("Firebase Admin initialized via Environment Variable.")
     else:
-        print(f"ERROR: Could not find serviceAccountKey.json at {key_path}")
+        # 2. Fallback to local serviceAccountKey.json for offline testing
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        key_path = os.path.join(os.path.dirname(base_dir), "serviceAccountKey.json")
+        
+        if os.path.exists(key_path):
+            cred = credentials.Certificate(key_path)
+            firebase_admin.initialize_app(cred)
+            print("Firebase Admin initialized via local JSON file.")
+        else:
+            print(f"ERROR: Could not find Firebase credentials.")
 
 from app.routers import payments, services, api_keys
 
@@ -29,7 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers with explicit prefixing and tags
+# Include Routers
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 app.include_router(services.router, prefix="/api/services", tags=["Services"])
 app.include_router(api_keys.router, prefix="/api/keys", tags=["API Keys"])
@@ -37,4 +48,3 @@ app.include_router(api_keys.router, prefix="/api/keys", tags=["API Keys"])
 @app.get("/")
 def root():
     return {"status": "online", "message": "Fongoh Hub API Engine Running"}
-
