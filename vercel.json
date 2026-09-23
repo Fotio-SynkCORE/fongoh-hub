@@ -1,11 +1,4 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "functions": {},
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/$1"
-    }
-  ]
+  "cleanUrls": true
 }
