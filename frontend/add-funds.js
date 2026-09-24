@@ -7,7 +7,8 @@ import {
   ensureUserDoc 
 } from "./user-data.js";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_URL = "https://fongoh-hub-production.up.railway.app";
+
 
 let currentUser = null;
 let unsubscribeBalance = null;
