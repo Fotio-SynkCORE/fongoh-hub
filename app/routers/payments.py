@@ -1,5 +1,6 @@
 import os
 import httpx
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -25,10 +26,10 @@ def get_fapshi_headers():
     }
 
 
-# Request schema matching add-funds.js
+# Updated request schema to support users without email (phone/anon auth)
 class FapshiCheckoutRequest(BaseModel):
     userId: str
-    email: str
+    email: Optional[str] = "user@fongoh.com"
     amount: float
 
 
@@ -39,7 +40,7 @@ async def fapshi_checkout(payload: FapshiCheckoutRequest):
     """
     fapshi_payload = {
         "amount": int(payload.amount),
-        "email": payload.email,
+        "email": payload.email or "user@fongoh.com",
         "userId": payload.userId,
         "externalId": f"topup_{payload.userId}_{int(payload.amount)}"
     }
@@ -99,4 +100,3 @@ async def verify_payment(trans_id: str, db: Session = Depends(get_db)):
             
     except httpx.ConnectError:
         raise HTTPException(status_code=503, detail="Backend lost internet connection while contacting Fapshi.")
-
