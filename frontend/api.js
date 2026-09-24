@@ -2,7 +2,7 @@ import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const BACKEND_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
