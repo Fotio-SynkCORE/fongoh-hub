@@ -25,13 +25,21 @@ if not firebase_admin._apps:
             firebase_admin.initialize_app(cred)
             print("Firebase Admin initialized via local JSON file.")
         else:
-            print(f"ERROR: Could not find Firebase credentials.")
+            print("ERROR: Could not find Firebase credentials.")
 
 from app.routers import payments, services, api_keys
 
 app = FastAPI(title="Fongoh Hub API Engine")
 
-# Configure CORS
+# Allowed origins for frontend requests
+origins = [
+    "https://fongoh-hub.netlify.app",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "*"
+]
+
+# Configure CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
