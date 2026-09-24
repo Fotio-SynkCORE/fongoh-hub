@@ -7,7 +7,7 @@ import {
   ensureUserDoc 
 } from "./user-data.js";
 
-const API_URL = "https://fongoh-hub-production.up.railway.app";
+const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
 
 
 let currentUser = null;
