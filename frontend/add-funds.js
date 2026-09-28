@@ -8,31 +8,44 @@ import {
 } from "./user-data.js";
 
 const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
-// --- PASTE THIS EXACT SNIPPET ---
+
+// --- ENHANCED TRANSACTION VERIFICATION LISTENER ---
 window.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const transId = urlParams.get("transId") || urlParams.get("reference");
+  
+  // Log URL search string to debug what Fapshi passes back
+  console.log("URL Search Params:", window.location.search);
+
+  // Catch all possible variants of transaction identifiers returned by gateways
+  const transId = 
+    urlParams.get("transId") || 
+    urlParams.get("transactionId") || 
+    urlParams.get("reference") || 
+    urlParams.get("token") ||
+    urlParams.get("id");
 
   if (transId) {
     try {
-      console.log("Verifying transaction:", transId);
+      console.log("Verifying transaction ID:", transId);
       const response = await fetch(`${API_BASE_URL}/api/payments/verify-payment/${transId}`);
       const data = await response.json();
       
       if (response.ok) {
         alert("Payment successful! Your wallet has been credited.");
+        // Clean URL parameters cleanly without reloading first
         window.history.replaceState({}, document.title, window.location.pathname);
+        // Refresh to fetch latest real-time balance and transaction status
+        location.reload();
       } else {
         console.error("Verification failed:", data);
+        alert("Payment verification failed: " + (data.message || "Unknown error"));
       }
     } catch (err) {
-      console.error("Verification error:", err);
+      console.error("Verification network error:", err);
     }
   }
 });
-// ---------------------------------
-
-
+// --------------------------------------------------
 
 let currentUser = null;
 let unsubscribeBalance = null;
@@ -219,4 +232,3 @@ document.getElementById("paymentForm")?.addEventListener("submit", async (e) => 
     payBtn.innerText = "Pay with Mobile Money";
   }
 });
-
