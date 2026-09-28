@@ -107,34 +107,23 @@ function initDashboardListeners(uid) {
   });
 }
 
-// Sign-out action
-document.getElementById("signOutBtn")?.addEventListener("click", () => {
-  signOut(auth).then(() => {
-    window.location.href = "login.html";
-  });
-});
-
 // Sidebar Toggle Helper Code
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Locate trigger button and target elements dynamically
   const menuBtn = document.querySelector(".menu-btn, .hamburger-btn, [aria-label='Toggle menu']");
   const sidebar = document.querySelector(".sidebar, .vertical-navbar, .nav-drawer, #sidebar");
   const overlay = document.querySelector(".overlay, .nav-overlay, #overlay");
   const closeBtn = document.querySelector(".close-sidebar-btn, .sidebar .close-btn");
 
-  // Function to open navigation drawer
   const openNavbar = () => {
     if (sidebar) sidebar.classList.add("open", "active");
     if (overlay) overlay.classList.add("open", "active");
   };
 
-  // Function to close navigation drawer
   const closeNavbar = () => {
     if (sidebar) sidebar.classList.remove("open", "active");
     if (overlay) overlay.classList.remove("open", "active");
   };
 
-  // Attach click listener to menu button
   if (menuBtn) {
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -142,7 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Attach close listeners
   if (overlay) overlay.addEventListener("click", closeNavbar);
   if (closeBtn) closeBtn.addEventListener("click", closeNavbar);
 });
@@ -151,11 +139,9 @@ document.addEventListener("DOMContentLoaded", () => {
 const signOutBtn = document.getElementById("signOutBtn");
 if (signOutBtn) {
   signOutBtn.addEventListener("click", () => {
-    // Clear local session storage if needed
     localStorage.clear();
-    
-    // Redirect to index.html
-    window.location.href = "index.html";
+    signOut(auth).then(() => {
+      window.location.href = "login.html";
+    });
   });
 }
-
