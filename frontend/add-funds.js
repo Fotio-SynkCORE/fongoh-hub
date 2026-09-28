@@ -8,6 +8,30 @@ import {
 } from "./user-data.js";
 
 const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
+// --- PASTE THIS EXACT SNIPPET ---
+window.addEventListener("DOMContentLoaded", async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const transId = urlParams.get("transId") || urlParams.get("reference");
+
+  if (transId) {
+    try {
+      console.log("Verifying transaction:", transId);
+      const response = await fetch(`${API_BASE_URL}/api/payments/verify-payment/${transId}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert("Payment successful! Your wallet has been credited.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        console.error("Verification failed:", data);
+      }
+    } catch (err) {
+      console.error("Verification error:", err);
+    }
+  }
+});
+// ---------------------------------
+
 
 
 let currentUser = null;
