@@ -11,7 +11,6 @@ load_dotenv()
 
 # Initialize Firebase Admin if not already initialized
 if not firebase_admin._apps:
-    # Ensure your service account key is set up or use default app initialization
     firebase_admin.initialize_app()
 
 db = firestore.client()
@@ -56,14 +55,17 @@ async def fapshi_checkout(payload: FapshiCheckoutRequest):
             res_data = response.json()
 
             if response.status_code == 200 and "link" in res_data:
-                trans_id = res_data.get("transId") or res_data.get("id")
+                trans_id = res_data.get("transId") or res_data.get("id") or res_data.get("token")
                 
-                # Optional: Update the latest pending transaction in Firestore with this transId
+                # Safely attach transId to the user's latest pending transaction without complex indexing
                 try:
                     transactions_ref = db.collection("users").document(payload.userId).collection("transactions")
-                    pending_txs = transactions_ref.where("status", "==", "pending").order_by("createdAt", direction=firestore.Query.DESCENDING).limit(1).get()
-                    for doc in pending_txs:
-                        doc.reference.update({"transId": trans_id})
+                    pending_docs = transactions_ref.limit(5).get()
+                    for doc in pending_docs:
+                        doc_data = doc.to_dict()
+                        if doc_data.get("status") == "pending" and not doc_data.get("transId"):
+                            doc.reference.update({"transId": trans_id})
+                            break
                 except Exception as db_err:
                     print("Could not attach transId to Firestore pending doc:", db_err)
 
@@ -81,6 +83,7 @@ async def fapshi_checkout(payload: FapshiCheckoutRequest):
             detail="Network connection error. Cannot reach Fapshi servers."
         )
     except Exception as e:
+        print("Checkout exception:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -97,36 +100,32 @@ async def verify_payment(trans_id: str):
             if response.status_code == 200:
                 payment_status = res_data.get("status") # e.g., "SUCCESSFUL" or "COMPLETED"
                 
-                # Check if payment is successful
                 if payment_status in ["SUCCESSFUL", "SUCCESS", "COMPLETED"]:
-                    # Find which user owns this transaction in Firestore
-                    # We look through users collection to find the transaction matching this transId
                     users_ref = db.collection("users").stream()
                     target_user_id = None
                     target_tx_doc = None
                     tx_amount = 0
 
+                    # Safe iteration to find the matching transaction across users
                     for user_doc in users_ref:
                         tx_ref = db.collection("users").document(user_doc.id).collection("transactions")
-                        # Match by transId field or fallback if stored differently
-                        query = tx_ref.where("transId", "==", trans_id).limit(1).get()
-                        if not query:
-                            # Try matching recent pending transactions if transId wasn't saved yet
-                            query = tx_ref.where("status", "==", "pending").limit(1).get()
-
-                        for tx_doc in query:
+                        tx_docs = tx_ref.limit(10).get()
+                        
+                        for tx_doc in tx_docs:
                             tx_data = tx_doc.to_dict()
-                            if tx_data.get("status") != "SUCCESSFUL" and tx_data.get("status") != "completed":
-                                target_user_id = user_doc.id
-                                target_tx_doc = tx_doc.reference
-                                tx_amount = float(tx_data.get("amount", 0))
-                                break
+                            # Match either by saved transId or if it's the recent pending transaction
+                            if tx_data.get("transId") == trans_id or (tx_data.get("status") == "pending" and not tx_data.get("transId")):
+                                if tx_data.get("status") not in ["SUCCESSFUL", "completed", "SUCCESS"]:
+                                    target_user_id = user_doc.id
+                                    target_tx_doc = tx_doc.reference
+                                    tx_amount = float(tx_data.get("amount", 0))
+                                    break
                         if target_user_id:
                             break
 
                     if target_user_id and target_tx_doc:
-                        # Update transaction status to successful
-                        target_tx_doc.update({"status": "completed"})
+                        # Update transaction status to completed
+                        target_tx_doc.update({"status": "completed", "transId": trans_id})
                         
                         # Increment user wallet balance safely in Firestore
                         user_doc_ref = db.collection("users").document(target_user_id)
