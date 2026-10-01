@@ -8,43 +8,55 @@ import {
 } from "./user-data.js";
 
 const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
+const PENDING_KEY = "fapshiPendingTransId";
 
-// --- ENHANCED TRANSACTION VERIFICATION LISTENER ---
-window.addEventListener("DOMContentLoaded", async () => {
+// --- PAYMENT VERIFICATION (runs when the page opens) ---
+async function verifyReturningPayment() {
   const urlParams = new URLSearchParams(window.location.search);
-  
-  // Log URL search string to debug what Fapshi passes back
   console.log("URL Search Params:", window.location.search);
 
-  // Catch all possible variants of transaction identifiers returned by gateways
-  const transId = 
-    urlParams.get("transId") || 
-    urlParams.get("transactionId") || 
-    urlParams.get("reference") || 
-    urlParams.get("token") ||
-    urlParams.get("id");
+  // transId from Fapshi redirect, or the one we saved before leaving the site
+  const transId =
+    urlParams.get("transId") ||
+    urlParams.get("transactionId") ||
+    localStorage.getItem(PENDING_KEY);
 
-  if (transId) {
-    try {
-      console.log("Verifying transaction ID:", transId);
-      const response = await fetch(`${API_BASE_URL}/api/payments/verify-payment/${transId}`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert("Payment successful! Your wallet has been credited.");
-        // Clean URL parameters cleanly without reloading first
-        window.history.replaceState({}, document.title, window.location.pathname);
-        // Refresh to fetch latest real-time balance and transaction status
-        location.reload();
-      } else {
-        console.error("Verification failed:", data);
-        alert("Payment verification failed: " + (data.message || "Unknown error"));
-      }
-    } catch (err) {
-      console.error("Verification network error:", err);
+  if (!transId) return;
+
+  try {
+    console.log("Verifying transaction ID:", transId);
+    const response = await fetch(`${API_BASE_URL}/api/payments/verify-payment/${transId}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Verification failed:", data);
+      return;
     }
+
+    const status = (data.status || "").toUpperCase();
+
+    if (status === "SUCCESSFUL") {
+      localStorage.removeItem(PENDING_KEY);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      if (data.credited) {
+        alert("Payment successful! Your wallet has been credited.");
+      }
+      // balance and transactions update live through the Firestore listeners
+    } else if (status === "FAILED" || status === "EXPIRED") {
+      localStorage.removeItem(PENDING_KEY);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      alert("Payment was not completed (" + status.toLowerCase() + ").");
+    } else {
+      // CREATED / PENDING: still waiting for the user to confirm on their phone
+      console.log("Payment still pending, will re-check on next visit.");
+      setTimeout(verifyReturningPayment, 8000);
+    }
+  } catch (err) {
+    console.error("Verification network error:", err);
   }
-});
+}
+
+verifyReturningPayment();
 // --------------------------------------------------
 
 let currentUser = null;
@@ -99,8 +111,9 @@ function initWalletListeners(uid) {
       const row = document.createElement("div");
       row.className = "tx-row";
 
-      const isCompleted = tx.status === "completed" || tx.status === "SUCCESS";
-      const isFailed = tx.status === "failed" || tx.status === "EXPIRED";
+      const st = (tx.status || "pending").toLowerCase();
+      const isCompleted = ["completed", "success", "successful"].includes(st);
+      const isFailed = ["failed", "expired"].includes(st);
       
       const statusColor = isCompleted ? "#10B981" : isFailed ? "#EF4444" : "#F59E0B";
       const displayAmount = tx.amount > 0 ? `+${parseFloat(tx.amount).toFixed(2)} XAF` : `-${Math.abs(parseFloat(tx.amount)).toFixed(2)} XAF`;
@@ -120,7 +133,7 @@ function initWalletListeners(uid) {
         <div style="text-align: right;">
           <div style="font-weight: 700; color: ${statusColor}; font-size: 14px;">${displayAmount}</div>
           <span style="display: inline-block; background: rgba(255,255,255,0.05); color: ${statusColor}; border: 1px solid ${statusColor}40; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-transform: uppercase; margin-top: 4px;">
-            ${tx.status || 'pending'}
+            ${st}
           </span>
         </div>
       `;
@@ -211,17 +224,21 @@ document.getElementById("paymentForm")?.addEventListener("submit", async (e) => 
       body: JSON.stringify({
         userId: activeUser.uid,
         email: activeUser.email,
-        amount: amount
+        amount: amount,
+        // Fapshi brings the user back to this page with ?transId=...
+        redirectUrl: window.location.origin + window.location.pathname
       })
     });
 
     const data = await response.json();
 
     if (data && data.link) {
+      // Remember the payment so we can verify it even if the redirect loses the ID
+      if (data.transId) localStorage.setItem(PENDING_KEY, data.transId);
       window.location.href = data.link; // Redirects to checkout.fapshi.com
       return;
     } else {
-      throw new Error(data.message || "Failed to generate checkout link.");
+      throw new Error(data.detail || data.message || "Failed to generate checkout link.");
     }
 
   } catch (error) {
