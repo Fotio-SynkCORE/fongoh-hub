@@ -1,16 +1,21 @@
 import os
 import httpx
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.database import get_db
-from app import models
 from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 load_dotenv()
 
-# NO prefix here since app.py / main.py handles prefix="/api/payments"
+# Initialize Firebase Admin if not already initialized
+if not firebase_admin._apps:
+    # Ensure your service account key is set up or use default app initialization
+    firebase_admin.initialize_app()
+
+db = firestore.client()
+
 router = APIRouter(tags=["Payments"])
 
 FAPSHI_API_USER = os.getenv("FAPSHI_API_USER")
@@ -26,7 +31,6 @@ def get_fapshi_headers():
     }
 
 
-# Updated request schema to support users without email (phone/anon auth)
 class FapshiCheckoutRequest(BaseModel):
     userId: str
     email: Optional[str] = "user@fongoh.com"
@@ -35,9 +39,6 @@ class FapshiCheckoutRequest(BaseModel):
 
 @router.post("/fapshi/checkout")
 async def fapshi_checkout(payload: FapshiCheckoutRequest):
-    """
-    Endpoint matched to frontend fetch request in add-funds.js
-    """
     fapshi_payload = {
         "amount": int(payload.amount),
         "email": payload.email or "user@fongoh.com",
@@ -55,9 +56,19 @@ async def fapshi_checkout(payload: FapshiCheckoutRequest):
             res_data = response.json()
 
             if response.status_code == 200 and "link" in res_data:
-                return {"link": res_data["link"], "transId": res_data.get("transId")}
+                trans_id = res_data.get("transId") or res_data.get("id")
+                
+                # Optional: Update the latest pending transaction in Firestore with this transId
+                try:
+                    transactions_ref = db.collection("users").document(payload.userId).collection("transactions")
+                    pending_txs = transactions_ref.where("status", "==", "pending").order_by("createdAt", direction=firestore.Query.DESCENDING).limit(1).get()
+                    for doc in pending_txs:
+                        doc.reference.update({"transId": trans_id})
+                except Exception as db_err:
+                    print("Could not attach transId to Firestore pending doc:", db_err)
+
+                return {"link": res_data["link"], "transId": trans_id}
             
-            # Print for backend debugging
             print("Fapshi Error Response:", res_data)
             raise HTTPException(
                 status_code=400, 
@@ -67,14 +78,14 @@ async def fapshi_checkout(payload: FapshiCheckoutRequest):
     except httpx.ConnectError:
         raise HTTPException(
             status_code=503, 
-            detail="Network connection error. Cannot reach Fapshi servers. Ensure active internet connection."
+            detail="Network connection error. Cannot reach Fapshi servers."
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/verify-payment/{trans_id}")
-async def verify_payment(trans_id: str, db: Session = Depends(get_db)):
+async def verify_payment(trans_id: str):
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             response = await client.get(
@@ -84,15 +95,46 @@ async def verify_payment(trans_id: str, db: Session = Depends(get_db)):
             res_data = response.json()
 
             if response.status_code == 200:
-                payment_status = res_data.get("status")
+                payment_status = res_data.get("status") # e.g., "SUCCESSFUL" or "COMPLETED"
+                
+                # Check if payment is successful
+                if payment_status in ["SUCCESSFUL", "SUCCESS", "COMPLETED"]:
+                    # Find which user owns this transaction in Firestore
+                    # We look through users collection to find the transaction matching this transId
+                    users_ref = db.collection("users").stream()
+                    target_user_id = None
+                    target_tx_doc = None
+                    tx_amount = 0
 
-                trans = db.query(models.Transaction).filter(models.Transaction.trans_id == trans_id).first()
-                if trans and trans.status != "SUCCESSFUL" and payment_status == "SUCCESSFUL":
-                    trans.status = "SUCCESSFUL"
-                    user = db.query(models.User).filter(models.User.id == trans.user_id).first()
-                    if user:
-                        user.wallet_balance += trans.amount
-                    db.commit()
+                    for user_doc in users_ref:
+                        tx_ref = db.collection("users").document(user_doc.id).collection("transactions")
+                        # Match by transId field or fallback if stored differently
+                        query = tx_ref.where("transId", "==", trans_id).limit(1).get()
+                        if not query:
+                            # Try matching recent pending transactions if transId wasn't saved yet
+                            query = tx_ref.where("status", "==", "pending").limit(1).get()
+
+                        for tx_doc in query:
+                            tx_data = tx_doc.to_dict()
+                            if tx_data.get("status") != "SUCCESSFUL" and tx_data.get("status") != "completed":
+                                target_user_id = user_doc.id
+                                target_tx_doc = tx_doc.reference
+                                tx_amount = float(tx_data.get("amount", 0))
+                                break
+                        if target_user_id:
+                            break
+
+                    if target_user_id and target_tx_doc:
+                        # Update transaction status to successful
+                        target_tx_doc.update({"status": "completed"})
+                        
+                        # Increment user wallet balance safely in Firestore
+                        user_doc_ref = db.collection("users").document(target_user_id)
+                        user_snapshot = user_doc_ref.get()
+                        if user_snapshot.exists:
+                            current_balance = float(user_snapshot.to_dict().get("balance", 0))
+                            new_balance = current_balance + tx_amount
+                            user_doc_ref.update({"balance": new_balance})
 
                 return {"trans_id": trans_id, "status": payment_status}
 
@@ -100,3 +142,6 @@ async def verify_payment(trans_id: str, db: Session = Depends(get_db)):
             
     except httpx.ConnectError:
         raise HTTPException(status_code=503, detail="Backend lost internet connection while contacting Fapshi.")
+    except Exception as e:
+        print("Verification exception:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
