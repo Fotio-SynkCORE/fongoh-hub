@@ -6,6 +6,7 @@ from typing import Optional
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.api_core.exceptions import AlreadyExists
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
@@ -67,21 +68,21 @@ def _credit_wallet_sync(trans_id: str, uid: str, amount: int) -> bool:
     pay_ref = db.collection(PAYMENTS_COLLECTION).document(trans_id)
     user_ref = db.collection(USERS_COLLECTION).document(uid)
 
-    @firestore.transactional
-    def run(txn):
-        snap = pay_ref.get(transaction=txn)
-        if snap.exists and snap.to_dict().get("credited"):
-            return False
-        txn.set(user_ref, {BALANCE_FIELD: firestore.Increment(amount)}, merge=True)
-        txn.set(pay_ref, {
-            "uid": uid,
-            "amount": amount,
-            "credited": True,
-            "creditedAt": firestore.SERVER_TIMESTAMP,
-        })
-        return True
-
-    credited_now = run(db.transaction())
+    # One atomic batch: create() fails with AlreadyExists if this transId was
+    # already credited, and then the balance increment is NOT applied either.
+    batch = db.batch()
+    batch.create(pay_ref, {
+        "uid": uid,
+        "amount": amount,
+        "credited": True,
+        "creditedAt": firestore.SERVER_TIMESTAMP,
+    })
+    batch.set(user_ref, {BALANCE_FIELD: firestore.Increment(amount)}, merge=True)
+    try:
+        batch.commit()
+        credited_now = True
+    except AlreadyExists:
+        credited_now = False
 
     # Update the pending transaction row the frontend created (or add one)
     tx_col = user_ref.collection(TX_SUBCOLLECTION)
