@@ -31,9 +31,9 @@ PAYMENTS_COLLECTION = "fapshi_payments"  # idempotency records, one per transId
 # ---------------------------------------------------------------- Firebase
 def get_db():
     if not firebase_admin._apps:
-        raw = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+        raw = os.getenv("FIREBASE_SERVICE_ACCOUNT") or os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
         if not raw:
-            raise RuntimeError("FIREBASE_SERVICE_ACCOUNT_JSON is not set on Railway")
+            raise RuntimeError("FIREBASE_SERVICE_ACCOUNT is not set on Railway")
         firebase_admin.initialize_app(credentials.Certificate(json.loads(raw)))
     return firestore.client()
 
