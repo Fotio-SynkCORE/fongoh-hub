@@ -3,18 +3,35 @@ from fastapi.concurrency import run_in_threadpool
 from firebase_admin import auth as fb_auth, firestore
 from pydantic import BaseModel, Field
 
-# NOTE: no prefix here. main.py already mounts this router at /api/services,
-# so the buy route is POST /api/services/buy-number
+# NOTE: no prefix here. main.py already mounts this router at /api/services
+#   POST /api/services/buy-number
+#   POST /api/services/boost
+#   POST /api/services/buy-account
 router = APIRouter(tags=["Services"])
 
 
+# ---------------------------------------------------------------- requests
 class BuyNumberRequest(BaseModel):
     service: str
     country: str
     pool_id: str
-    price: int = Field(gt=0)  # price in XAF
+    price: int = Field(gt=0)  # XAF
 
 
+class BoostRequest(BaseModel):
+    package_name: str
+    target_link: str = Field(max_length=500)
+    quantity: int = Field(gt=0)
+    price: int = Field(gt=0)  # XAF
+
+
+class BuyAccountRequest(BaseModel):
+    account_id: str
+    title: str
+    price: int = Field(gt=0)  # XAF
+
+
+# ----------------------------------------------------------------- helpers
 def get_uid(authorization: str | None) -> str:
     """Reads the logged-in user from the Firebase token sent by the website."""
     if not authorization or not authorization.startswith("Bearer "):
@@ -27,7 +44,9 @@ def get_uid(authorization: str | None) -> str:
         raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
 
 
-def buy_sync(uid: str, req: BuyNumberRequest) -> str:
+def charge_sync(uid: str, price: int, order: dict, label: str) -> str:
+    """Takes `price` XAF from the wallet, saves the order and a transaction row.
+    All-or-nothing: if the balance is too low, nothing is changed."""
     db = firestore.client()
     user_ref = db.collection("users").document(uid)
 
@@ -38,7 +57,7 @@ def buy_sync(uid: str, req: BuyNumberRequest) -> str:
             raise HTTPException(status_code=404, detail="User not found")
 
         balance = float((snap.to_dict() or {}).get("balance") or 0)
-        if balance < req.price:
+        if balance < price:
             raise HTTPException(
                 status_code=400,
                 detail="Insufficient wallet balance. Please top up.",
@@ -47,21 +66,18 @@ def buy_sync(uid: str, req: BuyNumberRequest) -> str:
         order_ref = user_ref.collection("orders").document()
         tx_ref = user_ref.collection("transactions").document()
 
-        txn.update(user_ref, {"balance": firestore.Increment(-req.price)})
+        txn.update(user_ref, {"balance": firestore.Increment(-price)})
         txn.set(order_ref, {
-            "serviceName": req.service,
-            "country": req.country,
-            "poolId": req.pool_id,
-            "price": req.price,
+            **order,
+            "price": price,
             "currency": "XAF",
-            "phone": "",
-            "status": "processing",  # becomes "active" once the number is delivered
+            "status": "processing",  # change to "active"/"completed" when delivered
             "createdAt": firestore.SERVER_TIMESTAMP,
         })
         txn.set(tx_ref, {
             "type": "purchase",
-            "serviceName": req.service,
-            "amount": -req.price,
+            "serviceName": label,
+            "amount": -price,
             "status": "completed",
             "createdAt": firestore.SERVER_TIMESTAMP,
         })
@@ -70,19 +86,46 @@ def buy_sync(uid: str, req: BuyNumberRequest) -> str:
     return run(db.transaction())
 
 
-@router.post("/buy-number")
-async def buy_number(req: BuyNumberRequest, authorization: str | None = Header(default=None)):
-    uid = get_uid(authorization)
+async def charge(uid: str, price: int, order: dict, label: str) -> dict:
     try:
-        order_id = await run_in_threadpool(buy_sync, uid, req)
+        order_id = await run_in_threadpool(charge_sync, uid, price, order, label)
     except HTTPException:
         raise
     except Exception as e:
-        print("Buy number error:", repr(e))
+        print("Charge error:", repr(e))
         raise HTTPException(status_code=500, detail="Could not complete the order.")
+    return {"status": "SUCCESS", "message": "Order placed", "order_id": order_id}
 
-    return {
-        "status": "SUCCESS",
-        "message": "Order placed",
-        "order_id": order_id,
-    }
+
+# ------------------------------------------------------------------ routes
+@router.post("/buy-number")
+async def buy_number(req: BuyNumberRequest, authorization: str | None = Header(default=None)):
+    uid = get_uid(authorization)
+    return await charge(uid, req.price, {
+        "type": "number",
+        "serviceName": req.service,
+        "country": req.country,
+        "poolId": req.pool_id,
+        "phone": "",
+    }, req.service)
+
+
+@router.post("/boost")
+async def boost(req: BoostRequest, authorization: str | None = Header(default=None)):
+    uid = get_uid(authorization)
+    return await charge(uid, req.price, {
+        "type": "boost",
+        "serviceName": req.package_name,
+        "targetLink": req.target_link,
+        "quantity": req.quantity,
+    }, req.package_name)
+
+
+@router.post("/buy-account")
+async def buy_account(req: BuyAccountRequest, authorization: str | None = Header(default=None)):
+    uid = get_uid(authorization)
+    return await charge(uid, req.price, {
+        "type": "account",
+        "serviceName": req.title,
+        "accountId": req.account_id,
+    }, req.title)
