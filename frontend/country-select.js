@@ -1,3 +1,6 @@
+import { priceLabel } from "./pricing.js";
+
+// Prices below stay in USD. pricing.js converts them to XAF for display.
 const servicesMap = {
   "whatsapp-1": [
     { id: "us", name: "USA", code: "us", pools: 1, minPrice: 4.76 },
@@ -260,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "country-card";
 
       card.onclick = () => {
-        window.location.href = `offers.html?serviceSlug=${encodeURIComponent(serviceSlug)}&serviceName=${encodeURIComponent(serviceName)}&country=${encodeURIComponent(country.id)}&countryName=${encodeURIComponent(country.name)}&code=${country.code}`;
+        window.location.href = `offers.html?serviceSlug=${encodeURIComponent(serviceSlug)}&serviceName=${encodeURIComponent(serviceName)}&country=${encodeURIComponent(country.id)}&countryName=${encodeURIComponent(country.name)}&code=${country.code}&minPrice=${country.minPrice}&pools=${country.pools}`;
       };
 
       card.innerHTML = `
@@ -271,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <p>${country.pools} number ${country.pools === 1 ? "pool" : "pools"}</p>
           </div>
         </div>
-        <div class="price-badge">from $${country.minPrice.toFixed(2)}</div>
+        <div class="price-badge">from ${priceLabel(country.minPrice)}</div>
       `;
 
       container.appendChild(card);
