@@ -1,13 +1,19 @@
 import { boostServices, getServiceBySlug } from "./data.js";
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { listenBalance } from "./user-data.js";
+import { toXaf, formatXAF } from "./pricing.js";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
-const CURRENT_USER_ID = 1;
+const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
 
 let currentPlatform = null;
 let currentCategory = null;
 let currentService = null;
 let selectedQty = 0;
-let calculatedPrice = 0;
+let calculatedPrice = 0; // always in XAF
+
+let userBalance = 0; // XAF, live from Firestore
+let unsubscribeBalance = null;
 
 // Drawer Controls
 window.openSidebar = function () {
@@ -26,20 +32,24 @@ window.goToStep = function (stepId) {
   document.getElementById(stepId)?.classList.add("active");
 };
 
-// Fetch User Balance
-async function fetchUserBalance() {
-  const balanceAmountEl = document.getElementById("balanceAmount");
-  if (!balanceAmountEl) return;
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/users/${CURRENT_USER_ID}/balance`);
-    if (res.ok) {
-      const data = await res.json();
-      balanceAmountEl.textContent = `$${Number(data.balance || 0).toFixed(2)}`;
-    }
-  } catch (err) {
-    console.warn("Unable to fetch balance:", err);
-  }
+// Live wallet balance (same source as the wallet page)
+function showBalance() {
+  const el = document.getElementById("balanceAmount");
+  if (el) el.textContent = formatXAF(userBalance);
 }
+
+onAuthStateChanged(auth, (user) => {
+  if (unsubscribeBalance) unsubscribeBalance();
+  if (!user) {
+    userBalance = 0;
+    showBalance();
+    return;
+  }
+  unsubscribeBalance = listenBalance(user.uid, (balance) => {
+    userBalance = Number(balance) || 0;
+    showBalance();
+  });
+});
 
 // STEP 1: Render Platforms List
 function renderPlatforms(filterText = "") {
@@ -84,7 +94,7 @@ function selectPlatform(slug, info) {
   // IF THERE IS ONLY 1 CATEGORY: Skip Step 2 and go straight to Step 3
   if (categories.length === 1) {
     selectCategory(categories[0]);
-    
+
     // Dynamically point Step 3 back button straight to Platforms (Step 1)
     const step3BackBtn = document.querySelector("#stepServices .back-btn");
     if (step3BackBtn) {
@@ -132,7 +142,7 @@ function selectCategory(categoryObj) {
   container.innerHTML = "";
 
   categoryObj.tiers.forEach((tier, index) => {
-    const basePrice = tier.price || 0;
+    const priceXaf = toXaf(tier.price || 0);
     const item = document.createElement("div");
     item.className = "list-item";
     item.style.flexDirection = "column";
@@ -151,7 +161,7 @@ function selectCategory(categoryObj) {
       </div>
       <div style="margin-top: 8px; margin-left: 50px;">
         <span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 20px; font-size: 12px; color: #10B981; font-weight: 600;">
-          🛒 $${basePrice.toFixed(2)} per ${tier.qty.toLocaleString()}
+          🛒 ${formatXAF(priceXaf)} per ${tier.qty.toLocaleString()}
         </span>
         ${index === 0 ? '<span class="badge-tag">🔥 Most popular</span>' : ''}
       </div>
@@ -194,14 +204,15 @@ function selectServicePackage(categoryObj, tierObj) {
   goToStep("stepOrderForm");
 }
 
-function setQuantity(qty, price, activeBtn) {
+// priceUsd comes from data.js, it is converted to XAF here
+function setQuantity(qty, priceUsd, activeBtn) {
   document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
   if (activeBtn) activeBtn.classList.add("active");
 
   document.getElementById("customQtyContainer").style.display = "none";
 
   selectedQty = qty;
-  calculatedPrice = price;
+  calculatedPrice = toXaf(priceUsd);
 
   updateSummary();
 }
@@ -218,11 +229,11 @@ function enableCustomQuantity(activeBtn) {
   const calculateCustom = () => {
     const qty = parseInt(customInput.value, 10) || 0;
     const baseQty = currentService.tier.qty || 1000;
-    const basePrice = currentService.tier.price || 1;
-    const unitPrice = basePrice / baseQty;
+    const baseXaf = toXaf(currentService.tier.price || 1);
+    const unitPrice = baseXaf / baseQty;
 
     selectedQty = qty;
-    calculatedPrice = qty * unitPrice;
+    calculatedPrice = qty > 0 ? Math.max(1, Math.ceil(qty * unitPrice)) : 0;
     updateSummary();
   };
 
@@ -232,12 +243,18 @@ function enableCustomQuantity(activeBtn) {
 
 function updateSummary() {
   document.getElementById("summaryQty").textContent = selectedQty.toLocaleString();
-  document.getElementById("summaryPrice").textContent = `$${calculatedPrice.toFixed(2)}`;
+  document.getElementById("summaryPrice").textContent = formatXAF(calculatedPrice);
 }
 
 // Order Form Submit Handler
 document.getElementById("orderForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please sign in first.");
+    return;
+  }
 
   const linkInput = document.getElementById("linkInput");
   const link = linkInput ? linkInput.value.trim() : "";
@@ -252,16 +269,26 @@ document.getElementById("orderForm")?.addEventListener("submit", async (e) => {
     return;
   }
 
+  if (userBalance < calculatedPrice) {
+    if (confirm("Insufficient wallet balance. Top up your wallet now?")) {
+      window.location.href = "add-funds.html";
+    }
+    return;
+  }
+
   const orderBtn = document.getElementById("orderBtn");
   orderBtn.disabled = true;
   orderBtn.textContent = "Submitting...";
 
   try {
+    const token = await user.getIdToken();
     const response = await fetch(`${API_BASE_URL}/api/services/boost`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify({
-        user_id: CURRENT_USER_ID,
         package_name: currentCategory.label,
         target_link: link,
         quantity: selectedQty,
@@ -269,19 +296,19 @@ document.getElementById("orderForm")?.addEventListener("submit", async (e) => {
       })
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (response.ok) {
-      alert(`Order Placed Successfully!\nOrder ID: ${data.order_id || 'CONFIRMED'}`);
+      alert(`Order placed successfully!\nOrder ID: ${data.order_id || "CONFIRMED"}`);
       document.getElementById("orderForm").reset();
       goToStep("stepPlatforms");
-      fetchUserBalance();
+      // balance updates live from Firestore
     } else {
-      alert(`Order Failed: ${data.detail || "Insufficient wallet balance."}`);
+      alert(`Order failed: ${data.detail || "Please try again."}`);
     }
   } catch (err) {
     console.error("API Error:", err);
-    alert("Could not complete order. Please check network connection.");
+    alert("Could not complete order. You were not charged. Please check your connection.");
   } finally {
     orderBtn.disabled = false;
     orderBtn.textContent = "Create order";
@@ -296,29 +323,27 @@ document.getElementById("platformSearch")?.addEventListener("input", (e) => {
 // Initial Setup
 document.addEventListener("DOMContentLoaded", () => {
   renderPlatforms();
-  fetchUserBalance();
+  showBalance();
+  updateSummary();
 });
+
 // Sidebar Toggle Helper Code
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Locate trigger button and target elements dynamically
   const menuBtn = document.querySelector(".menu-btn, .hamburger-btn, [aria-label='Toggle menu']");
   const sidebar = document.querySelector(".sidebar, .vertical-navbar, .nav-drawer, #sidebar");
   const overlay = document.querySelector(".overlay, .nav-overlay, #overlay");
   const closeBtn = document.querySelector(".close-sidebar-btn, .sidebar .close-btn");
 
-  // Function to open navigation drawer
   const openNavbar = () => {
     if (sidebar) sidebar.classList.add("open", "active");
     if (overlay) overlay.classList.add("open", "active");
   };
 
-  // Function to close navigation drawer
   const closeNavbar = () => {
     if (sidebar) sidebar.classList.remove("open", "active");
     if (overlay) overlay.classList.remove("open", "active");
   };
 
-  // Attach click listener to menu button
   if (menuBtn) {
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -326,8 +351,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Attach close listeners
   if (overlay) overlay.addEventListener("click", closeNavbar);
   if (closeBtn) closeBtn.addEventListener("click", closeNavbar);
 });
-
