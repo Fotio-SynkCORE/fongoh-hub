@@ -9,6 +9,7 @@ let userBalance = 0;        // always in XAF, read live from Firestore
 let balanceReady = false;
 let unsubscribeBalance = null;
 let buying = false;
+let pollTimer = null;
 
 // Keep the wallet balance live (same source as the wallet page)
 onAuthStateChanged(auth, (user) => {
@@ -49,7 +50,8 @@ function initOffers() {
     const offer = {
       poolId: `${countryId}-pool-${i}`,
       poolNumber: i,
-      priceXaf: toXaf(usd)
+      priceXaf: toXaf(usd),
+      serviceSlug
     };
 
     const card = document.createElement("div");
@@ -70,6 +72,17 @@ function initOffers() {
       processPurchase(offer, countryCode, serviceName);
     container.appendChild(card);
   }
+}
+
+async function authFetch(path, method = "GET", body) {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, data };
 }
 
 async function processPurchase(offer, code, serviceName) {
@@ -95,35 +108,101 @@ async function processPurchase(offer, code, serviceName) {
   buying = true;
 
   try {
-    const token = await user.getIdToken();
-    const res = await fetch(`${API_BASE_URL}/api/services/buy-number`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        service: serviceName,
-        country: code,
-        pool_id: offer.poolId,
-        price: offer.priceXaf
-      })
+    const { ok, data } = await authFetch("/api/numbers/buy", "POST", {
+      service_slug: offer.serviceSlug,
+      service: serviceName,
+      country: code,
+      pool_id: offer.poolId,
+      price: offer.priceXaf
     });
 
-    const data = await res.json().catch(() => ({}));
-
-    if (res.ok) {
-      alert("Order placed! Your number is being prepared.");
-      // balance updates live from Firestore, no reload needed
+    if (ok) {
+      showWaitingScreen(data.order_id, data.phone, serviceName);
     } else {
-      alert(data.detail || "Transaction failed. Please try again.");
+      alert(data.detail || "Could not get a number. You were not charged.");
     }
   } catch (err) {
     console.error("Purchase error:", err);
-    alert("Network error. You were not charged. Please try again.");
+    alert("Network error. Please check your wallet before trying again.");
   } finally {
     buying = false;
   }
+}
+
+// ---------------------------------------------------- waiting-for-code screen
+function showWaitingScreen(orderId, phone, serviceName) {
+  document.getElementById("waitOverlay")?.remove();
+  clearInterval(pollTimer);
+
+  const overlay = document.createElement("div");
+  overlay.id = "waitOverlay";
+  overlay.style.cssText =
+    "position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;";
+  overlay.innerHTML = `
+    <div style="background:#18191c;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:24px;width:100%;max-width:380px;text-align:center;color:#fff;">
+      <div style="font-size:13px;color:#9ca3af;">${serviceName}</div>
+      <div id="waitPhone" style="font-size:22px;font-weight:700;margin:10px 0;word-break:break-all;">${phone}</div>
+      <button id="copyPhone" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;">Copy number</button>
+      <div id="waitStatus" style="margin:20px 0 6px;font-size:15px;color:#F59E0B;">Waiting for the code...</div>
+      <div id="waitCode" style="font-size:34px;font-weight:700;letter-spacing:4px;color:#10B981;margin:6px 0;"></div>
+      <p id="waitHint" style="font-size:12px;color:#9ca3af;margin:10px 0 18px;">Use this number now. If no code arrives in about 19 minutes, your money is returned automatically.</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button id="cancelNumber" style="background:transparent;border:1px solid #ef4444;color:#ef4444;border-radius:10px;padding:10px 18px;cursor:pointer;">Cancel &amp; refund</button>
+        <button id="closeWait" style="background:#10B981;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const statusEl = overlay.querySelector("#waitStatus");
+  const codeEl = overlay.querySelector("#waitCode");
+  const cancelBtn = overlay.querySelector("#cancelNumber");
+
+  const stop = () => clearInterval(pollTimer);
+  overlay.querySelector("#closeWait").onclick = () => { stop(); overlay.remove(); };
+  overlay.querySelector("#copyPhone").onclick = () => navigator.clipboard?.writeText(phone);
+
+  cancelBtn.onclick = async () => {
+    cancelBtn.disabled = true;
+    try {
+      const { ok, data } = await authFetch(`/api/numbers/cancel/${orderId}`, "POST");
+      if (ok && data.status === "refunded") {
+        stop();
+        statusEl.style.color = "#9ca3af";
+        statusEl.textContent = "Cancelled. Your money was returned.";
+        cancelBtn.style.display = "none";
+      } else {
+        alert(data.detail || "Could not cancel yet. Please try again shortly.");
+        cancelBtn.disabled = false;
+      }
+    } catch (e) {
+      alert("Network error. Please try again.");
+      cancelBtn.disabled = false;
+    }
+  };
+
+  const check = async () => {
+    try {
+      const { ok, data } = await authFetch(`/api/numbers/status/${orderId}`);
+      if (!ok) return;
+      if (data.status === "completed" && data.code) {
+        stop();
+        statusEl.style.color = "#10B981";
+        statusEl.textContent = "Your code:";
+        codeEl.textContent = data.code;
+        cancelBtn.style.display = "none";
+      } else if (data.status === "refunded") {
+        stop();
+        statusEl.style.color = "#9ca3af";
+        statusEl.textContent = "No code arrived. Your money was returned.";
+        cancelBtn.style.display = "none";
+      }
+    } catch (e) {
+      console.warn("Status check failed:", e);
+    }
+  };
+
+  pollTimer = setInterval(check, 5000);
+  check();
 }
 
 window.closeModal = function () {
