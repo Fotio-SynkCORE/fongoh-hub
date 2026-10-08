@@ -27,7 +27,7 @@ if not firebase_admin._apps:
         else:
             print("ERROR: Could not find Firebase credentials.")
 
-from app.routers import payments, services, api_keys
+from app.routers import payments, services, api_keys, admin
 
 app = FastAPI(title="Fongoh Hub API Engine")
 
@@ -52,6 +52,7 @@ app.add_middleware(
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 app.include_router(services.router, prefix="/api/services", tags=["Services"])
 app.include_router(api_keys.router, prefix="/api/keys", tags=["API Keys"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 @app.get("/")
 def root():
