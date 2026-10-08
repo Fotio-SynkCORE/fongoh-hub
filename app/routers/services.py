@@ -4,20 +4,13 @@ from firebase_admin import auth as fb_auth, firestore
 from pydantic import BaseModel, Field
 
 # NOTE: no prefix here. main.py already mounts this router at /api/services
-#   POST /api/services/buy-number
 #   POST /api/services/boost
 #   POST /api/services/buy-account
+# Numbers now live in numbers.py (/api/numbers/...)
 router = APIRouter(tags=["Services"])
 
 
 # ---------------------------------------------------------------- requests
-class BuyNumberRequest(BaseModel):
-    service: str
-    country: str
-    pool_id: str
-    price: int = Field(gt=0)  # XAF
-
-
 class BoostRequest(BaseModel):
     package_name: str
     target_link: str = Field(max_length=500)
@@ -44,7 +37,7 @@ def get_uid(authorization: str | None) -> str:
         raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
 
 
-def charge_sync(uid: str, price: int, order: dict, label: str) -> str:
+def charge_sync(uid: str, price: int, order: dict, label: str, status: str = "processing") -> str:
     """Takes `price` XAF from the wallet, saves the order and a transaction row.
     All-or-nothing: if the balance is too low, nothing is changed."""
     db = firestore.client()
@@ -71,7 +64,7 @@ def charge_sync(uid: str, price: int, order: dict, label: str) -> str:
             **order,
             "price": price,
             "currency": "XAF",
-            "status": "processing",  # change to "active"/"completed" when delivered
+            "status": status,
             "createdAt": firestore.SERVER_TIMESTAMP,
         })
         txn.set(tx_ref, {
@@ -98,18 +91,6 @@ async def charge(uid: str, price: int, order: dict, label: str) -> dict:
 
 
 # ------------------------------------------------------------------ routes
-@router.post("/buy-number")
-async def buy_number(req: BuyNumberRequest, authorization: str | None = Header(default=None)):
-    uid = get_uid(authorization)
-    return await charge(uid, req.price, {
-        "type": "number",
-        "serviceName": req.service,
-        "country": req.country,
-        "poolId": req.pool_id,
-        "phone": "",
-    }, req.service)
-
-
 @router.post("/boost")
 async def boost(req: BoostRequest, authorization: str | None = Header(default=None)):
     uid = get_uid(authorization)
