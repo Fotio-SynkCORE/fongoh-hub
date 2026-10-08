@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Fongoh Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { background:#0d1117; color:#f0f6fc; font-family:'Inter',sans-serif; }
+  .box { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .box h3 { margin:0 0 12px; font-size:16px; }
+  .f { width:100%; box-sizing:border-box; padding:11px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.3); color:#fff; font-size:14px; margin-bottom:8px; }
+  .row { display:flex; gap:8px; }
+  .row .f { flex:1; min-width:0; }
+  .btn { background:#10B981; color:#fff; border:none; border-radius:10px; padding:11px 14px; font-weight:700; cursor:pointer; }
+  .btn.red { background:#ef4444; }
+  .btn:disabled { opacity:.6; }
+  .acc-title { font-weight:600; font-size:14px; margin-bottom:8px; }
+  .msg { color:#9ca3af; text-align:center; padding:30px 0; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="topbar">
+  <a href="index.html" class="menu-btn back-btn" aria-label="Back">‹</a>
+  <div class="titles">
+    <p class="eyebrow">Admin</p>
+    <h1>Manage Accounts</h1>
+  </div>
+</header>
+
+<main class="content" style="max-width:600px; margin:0 auto; padding-bottom:60px;">
+  <p id="status" class="msg">Checking access...</p>
+
+  <div id="panel" style="display:none;">
+    <section class="box">
+      <h3>Add an account</h3>
+      <form id="addForm">
+        <input class="f" id="newTitle" placeholder="Name (e.g. Netflix Premium)" required maxlength="80">
+        <div class="row">
+          <input class="f" id="newPrice" type="number" min="1" placeholder="Price (XAF)" required>
+          <input class="f" id="newStock" type="number" min="0" placeholder="Stock" required>
+        </div>
+        <input class="f" id="newImage" placeholder="Logo link (optional)">
+        <button class="btn" type="submit" style="width:100%;">Add account</button>
+      </form>
+    </section>
+
+    <section id="list"></section>
+  </div>
+</main>
+
+<script type="module">
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const API = "https://fongoh-hub-production.up.railway.app/api/admin";
+const statusEl = document.getElementById("status");
+const panel = document.getElementById("panel");
+const listEl = document.getElementById("list");
+
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function api(path, method = "GET", body) {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(API + path, {
+    method,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || "Request failed");
+  return data;
+}
+
+async function load() {
+  const { accounts } = await api("/accounts");
+  listEl.innerHTML = accounts.length ? "" : `<p class="msg">No accounts added here yet.</p>`;
+  accounts.forEach((a) => {
+    const card = document.createElement("div");
+    card.className = "box";
+    card.innerHTML = `
+      <div class="acc-title">${esc(a.title)}</div>
+      <input class="f t" value="${esc(a.title)}" maxlength="80">
+      <div class="row">
+        <input class="f p" type="number" min="1" value="${esc(a.price)}">
+        <input class="f s" type="number" min="0" value="${esc(a.stock)}">
+      </div>
+      <input class="f i" value="${esc(a.image_url)}" placeholder="Logo link">
+      <div class="row">
+        <button class="btn save" type="button">Save</button>
+        <button class="btn red del" type="button">Delete</button>
+      </div>`;
+    card.querySelector(".save").onclick = async (e) => {
+      e.target.disabled = true;
+      try {
+        await api(`/accounts/${a.id}`, "PUT", {
+          title: card.querySelector(".t").value,
+          price: parseInt(card.querySelector(".p").value, 10),
+          stock: parseInt(card.querySelector(".s").value, 10),
+          image_url: card.querySelector(".i").value
+        });
+        alert("Saved");
+        load();
+      } catch (err) { alert(err.message); e.target.disabled = false; }
+    };
+    card.querySelector(".del").onclick = async () => {
+      if (!confirm(`Delete ${a.title}?`)) return;
+      try { await api(`/accounts/${a.id}`, "DELETE"); load(); } catch (err) { alert(err.message); }
+    };
+    listEl.appendChild(card);
+  });
+}
+
+document.getElementById("addForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    await api("/accounts", "POST", {
+      title: document.getElementById("newTitle").value,
+      price: parseInt(document.getElementById("newPrice").value, 10),
+      stock: parseInt(document.getElementById("newStock").value, 10),
+      image_url: document.getElementById("newImage").value
+    });
+    e.target.reset();
+    load();
+  } catch (err) { alert(err.message); }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    statusEl.style.display = "block";
+    statusEl.textContent = "Please sign in first, then open this page again.";
+    panel.style.display = "none";
+    return;
+  }
+  try {
+    await load();   // the backend decides if this user is an admin
+    statusEl.style.display = "none";
+    panel.style.display = "block";
+  } catch (err) {
+    statusEl.style.display = "block";
+    statusEl.textContent = err.message === "Not allowed." ? "This page is for admins only." : err.message;
+    panel.style.display = "none";
+  }
+});
+</script>
+</body>
+</html>
