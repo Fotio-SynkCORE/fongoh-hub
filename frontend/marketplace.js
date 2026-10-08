@@ -5,6 +5,11 @@ import { formatXAF } from "./pricing.js";
 
 const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
 
+// After a successful purchase the buyer is sent to this WhatsApp number to
+// receive the account login. Same number as the support button for now.
+// TODO: change it if the seller uses another number (digits only, with country code).
+const SELLER_WHATSAPP = "237654287110";
+
 // ---------------------------------------------------------------------
 // ACCOUNTS FOR SALE (prices are in XAF). Change price / stock here.
 // TODO: the 6 new accounts at the bottom use PLACEHOLDER prices and stock.
@@ -124,6 +129,15 @@ function attachIconFallback(root, title) {
     img.onerror = null;
     img.src = fallbackIcon(title);
   };
+}
+
+// Opens WhatsApp with a ready message so the buyer can receive the login
+function openWhatsAppForOrder(title, orderId) {
+  const text =
+    `Hello, I just bought "${title}" on Fongoh Hub.\n` +
+    `Order ID: ${orderId}\n` +
+    `Please send me the account details.`;
+  window.location.href = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(text)}`;
 }
 
 // ------------------------------------------------------- wallet + orders
@@ -264,8 +278,8 @@ async function handleBuy(acc) {
     const data = await res.json().catch(() => ({}));
 
     if (res.ok) {
-      alert(`Order placed for ${acc.title}! Find it under "Bought accounts".`);
-      window.switchTab("bought");
+      alert("Payment successful! Opening WhatsApp so you can receive your account details.");
+      openWhatsAppForOrder(acc.title, data.order_id || "N/A");
     } else {
       alert(data.detail || "Purchase failed. Please try again.");
     }
@@ -308,8 +322,12 @@ function renderBought(orders) {
       <div class="account-title">${escapeHtml(order.serviceName)}</div>
       <div class="account-price">${formatXAF(order.price || 0)}</div>
       <div class="account-stock" style="text-transform: capitalize;">${escapeHtml(order.status || "processing")}</div>
+      <button class="buy-btn" style="background:#25D366;">Get on WhatsApp</button>
     `;
     attachIconFallback(card, order.serviceName);
+    card.querySelector(".buy-btn").addEventListener("click", () =>
+      openWhatsAppForOrder(order.serviceName, order.id)
+    );
     container.appendChild(card);
   });
 }
