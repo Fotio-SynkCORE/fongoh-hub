@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin
@@ -27,7 +28,7 @@ if not firebase_admin._apps:
         else:
             print("ERROR: Could not find Firebase credentials.")
 
-from app.routers import payments, services, api_keys, admin
+from app.routers import payments, services, api_keys, admin, numbers
 
 app = FastAPI(title="Fongoh Hub API Engine")
 
@@ -51,8 +52,16 @@ app.add_middleware(
 # Include Routers
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 app.include_router(services.router, prefix="/api/services", tags=["Services"])
+app.include_router(numbers.router, prefix="/api/numbers", tags=["Numbers"])
 app.include_router(api_keys.router, prefix="/api/keys", tags=["API Keys"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+
+
+@app.on_event("startup")
+async def start_background_jobs():
+    # refunds numbers whose SMS code never arrived, even if the customer left
+    asyncio.create_task(numbers.sweeper_loop())
+
 
 @app.get("/")
 def root():
