@@ -256,9 +256,10 @@ async def buy_number(req: BuyNumberRequest, authorization: str | None = Header(d
         )
     if text.startswith("NO_BALANCE") or text.startswith("BAD_KEY"):
         print("!!! CHECK THE GRIZZLY ACCOUNT: balance or API key problem")
+    reason = "".join(ch for ch in text.split(":")[0] if ch.isalnum() or ch == "_")[:30] or "UNKNOWN"
     raise HTTPException(
         status_code=503,
-        detail="Numbers are temporarily unavailable. You were not charged.",
+        detail=f"Numbers are temporarily unavailable ({reason}). You were not charged.",
     )
 
 
