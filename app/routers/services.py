@@ -110,3 +110,26 @@ async def buy_account(req: BuyAccountRequest, authorization: str | None = Header
         "serviceName": req.title,
         "accountId": req.account_id,
     }, req.title)
+
+
+# ------------------------------------------------------------------- eSIM
+class BuyEsimRequest(BaseModel):
+    plan_id: str
+    country: str
+    data_mb: int = Field(gt=0)
+    days: int = Field(gt=0)
+    price: int = Field(gt=0)  # XAF
+
+
+@router.post("/buy-esim")
+async def buy_esim(req: BuyEsimRequest, authorization: str | None = Header(default=None)):
+    uid = get_uid(authorization)
+    label = f"eSIM {req.country}"
+    return await charge(uid, req.price, {
+        "type": "esim",
+        "serviceName": label,
+        "country": req.country,
+        "planId": req.plan_id,
+        "dataMb": req.data_mb,
+        "days": req.days,
+    }, label)
