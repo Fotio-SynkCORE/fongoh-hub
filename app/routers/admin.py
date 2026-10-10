@@ -10,7 +10,7 @@ router = APIRouter(tags=["Admin"])
 # Admin emails. Add more in Railway with a variable ADMIN_EMAILS (comma separated).
 ADMIN_EMAILS = {
     e.strip().lower()
-    for e in os.getenv("ADMIN_EMAILS", "fongohboris90@gmail.com").split(",")
+    for e in os.getenv("ADMIN_EMAILS", "fongohborisndiy@gmail.com").split(",")
     if e.strip()
 }
 
