@@ -5,10 +5,13 @@ import { formatXAF } from "./pricing.js";
 
 const API_BASE_URL = "https://fongoh-hub-production.up.railway.app";
 
-// After a successful purchase the buyer is sent to this WhatsApp number to
-// receive the account login. Same number as the support button for now.
+// After a successful purchase the buyer is sent to this WhatsApp number
+// (customer care) to receive the account login.
 // TODO: change it if the seller uses another number (digits only, with country code).
 const SELLER_WHATSAPP = "237654287110";
+
+// Seconds the "Redirecting to WhatsApp" message stays before WhatsApp opens
+const REDIRECT_SECONDS = 4;
 
 // ---------------------------------------------------------------------
 // ACCOUNTS FOR SALE (prices are in XAF). Change price / stock here.
@@ -114,6 +117,7 @@ let userBalance = 0; // XAF, live from Firestore
 let unsubscribeBalance = null;
 let unsubscribeOrders = null;
 let buying = false;
+let redirectTimer = null;
 
 // ---------------------------------------------------------------- helpers
 function escapeHtml(text) {
@@ -145,6 +149,48 @@ function openWhatsAppForOrder(title, orderId) {
     `Order ID: ${orderId}\n` +
     `Please send me the account details.`;
   window.location.href = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(text)}`;
+}
+
+// ---------------------------------------------------------- dialog (popup)
+function closeDialog() {
+  clearInterval(redirectTimer);
+  document.getElementById("shopDialog")?.remove();
+}
+
+// buttons: [{ label, kind: "primary" | "ghost", onClick }]
+function showDialog({ icon = "", title, html = "", buttons = [] }) {
+  clearInterval(redirectTimer);
+  document.getElementById("shopDialog")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "shopDialog";
+  overlay.style.cssText =
+    "position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px;";
+
+  overlay.innerHTML = `
+    <div style="background:#161b22;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:24px;width:100%;max-width:360px;text-align:center;color:#f0f6fc;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+      ${icon ? `<div style="font-size:38px;margin-bottom:8px;">${icon}</div>` : ""}
+      <h3 style="margin:0 0 10px;font-size:18px;">${title}</h3>
+      <div id="shopDialogBody" style="font-size:14px;line-height:1.5;color:#9ca3af;">${html}</div>
+      <div id="shopDialogBtns" style="display:flex;gap:10px;margin-top:20px;"></div>
+    </div>`;
+
+  const row = overlay.querySelector("#shopDialogBtns");
+  buttons.forEach((b) => {
+    const btn = document.createElement("button");
+    btn.textContent = b.label;
+    btn.style.cssText =
+      "flex:1;padding:12px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;" +
+      (b.kind === "ghost"
+        ? "background:transparent;border:1px solid rgba(255,255,255,0.25);color:#fff;"
+        : "background:#10B981;border:none;color:#fff;");
+    btn.onclick = b.onClick;
+    row.appendChild(btn);
+  });
+  if (buttons.length === 0) row.remove();
+
+  document.body.appendChild(overlay);
+  return overlay;
 }
 
 // ------------------------------------------------------- wallet + orders
@@ -248,27 +294,62 @@ function renderAccounts(accounts) {
   });
 }
 
-async function handleBuy(acc) {
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Please sign in first.");
+// STEP 1: ask the customer to confirm before anything is bought
+function handleBuy(acc) {
+  if (buying) return;
+
+  if (!auth.currentUser) {
+    showDialog({
+      icon: "🔒",
+      title: "Please sign in",
+      html: "You need to be signed in to buy an account.",
+      buttons: [{ label: "OK", onClick: closeDialog }]
+    });
     return;
   }
 
   if (userBalance < acc.price) {
-    const goTopUp = confirm(
-      `Insufficient wallet balance!\n\nYour balance: ${formatXAF(userBalance)}\nItem price: ${formatXAF(acc.price)}\n\nTop up your wallet now?`
-    );
-    if (goTopUp) window.location.href = "add-funds.html";
+    showDialog({
+      icon: "💳",
+      title: "Insufficient balance",
+      html: `Your balance: <b style="color:#fff">${formatXAF(userBalance)}</b><br>
+             Price: <b style="color:#fff">${formatXAF(acc.price)}</b><br><br>
+             Top up your wallet to continue.`,
+      buttons: [
+        { label: "Cancel", kind: "ghost", onClick: closeDialog },
+        { label: "Top up", onClick: () => (window.location.href = "add-funds.html") }
+      ]
+    });
     return;
   }
 
-  if (!confirm(`Buy ${acc.title} for ${formatXAF(acc.price)}?`)) return;
+  showDialog({
+    icon: "🛒",
+    title: "Confirm your order",
+    html: `<b style="color:#fff">${escapeHtml(acc.title)}</b><br>
+           Price: <b style="color:#10B981">${formatXAF(acc.price)}</b><br>
+           Balance after payment: ${formatXAF(userBalance - acc.price)}<br><br>
+           Do you want to continue to payment?`,
+    buttons: [
+      { label: "Cancel", kind: "ghost", onClick: closeDialog },   // nothing is bought
+      { label: "Yes, buy", onClick: () => payForAccount(acc) }
+    ]
+  });
+}
+
+// STEP 2: payment, then the redirect message, then WhatsApp customer care
+async function payForAccount(acc) {
   if (buying) return;
   buying = true;
 
+  showDialog({
+    icon: "⏳",
+    title: "Processing payment...",
+    html: "Please wait, do not close this page."
+  });
+
   try {
-    const token = await user.getIdToken();
+    const token = await auth.currentUser.getIdToken();
     const res = await fetch(`${API_BASE_URL}/api/services/buy-account`, {
       method: "POST",
       headers: {
@@ -285,17 +366,51 @@ async function handleBuy(acc) {
     const data = await res.json().catch(() => ({}));
 
     if (res.ok) {
-      alert("Payment successful! Opening WhatsApp so you can receive your account details.");
-      openWhatsAppForOrder(acc.title, data.order_id || "N/A");
+      showRedirectMessage(acc, data.order_id || "N/A");
     } else {
-      alert(data.detail || "Purchase failed. Please try again.");
+      showDialog({
+        icon: "⚠️",
+        title: "Purchase failed",
+        html: escapeHtml(data.detail || "Something went wrong. You were not charged."),
+        buttons: [{ label: "Close", onClick: closeDialog }]
+      });
     }
   } catch (err) {
     console.error("Buy account error:", err);
-    alert("Network error. You were not charged. Please try again.");
+    showDialog({
+      icon: "⚠️",
+      title: "Network error",
+      html: "Please check your connection and try again. You were not charged.",
+      buttons: [{ label: "Close", onClick: closeDialog }]
+    });
   } finally {
     buying = false;
   }
+}
+
+function showRedirectMessage(acc, orderId) {
+  let seconds = REDIRECT_SECONDS;
+
+  const overlay = showDialog({
+    icon: "✅",
+    title: "Payment successful!",
+    html: `Your order for <b style="color:#fff">${escapeHtml(acc.title)}</b> has been placed.<br><br>
+           Redirecting you to WhatsApp customer care in
+           <b id="redirectCount" style="color:#10B981">${seconds}</b>s to receive your account details...`,
+    buttons: [
+      { label: "Open WhatsApp now", onClick: () => openWhatsAppForOrder(acc.title, orderId) }
+    ]
+  });
+
+  redirectTimer = setInterval(() => {
+    seconds -= 1;
+    const el = overlay.querySelector("#redirectCount");
+    if (el) el.textContent = Math.max(seconds, 0);
+    if (seconds <= 0) {
+      clearInterval(redirectTimer);
+      openWhatsAppForOrder(acc.title, orderId);
+    }
+  }, 1000);
 }
 
 // Search Filter
