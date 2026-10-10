@@ -2,7 +2,7 @@ import { auth } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // Only for showing the link. The real protection is in the backend (admin.py).
-const ADMIN_EMAILS = ["fongohboris90@gmail.com"];
+const ADMIN_EMAILS = ["fongohborisndiy@gmail.com"];
 
 onAuthStateChanged(auth, (user) => {
   const list = document.querySelector("#sidebar ul, .sidebar ul");
@@ -20,4 +20,3 @@ onAuthStateChanged(auth, (user) => {
   item.onclick = () => (window.location.href = "admin.html");
   list.appendChild(item);
 });
-
