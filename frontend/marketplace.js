@@ -16,6 +16,13 @@ const SELLER_WHATSAPP = "237654287110";
 // ---------------------------------------------------------------------
 const defaultAccounts = [
   {
+    id: "test-500",
+    title: "Test Account (500 XAF)", // TODO delete this line block after testing
+    price: 500,
+    stock: 5,
+    image_url: "https://img.icons8.com/color/144/gender-neutral-user.png"
+  },
+  {
     id: "def-1",
     title: "Old Google Voice",
     price: 3500,
