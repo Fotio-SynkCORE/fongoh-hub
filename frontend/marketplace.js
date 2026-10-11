@@ -253,7 +253,9 @@ try {
     collection(db, "accounts"),
     (snap) => {
       firestoreAccounts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      allAccounts = [...defaultAccounts, ...firestoreAccounts];
+      // The database is the source of truth (stock goes down when someone buys).
+      // Until the starter accounts are loaded from the admin page, the typed list below is shown.
+      allAccounts = firestoreAccounts.length ? firestoreAccounts : defaultAccounts;
       window.filterAccounts();
     },
     () => console.log("Firestore accounts not loaded, showing default accounts.")
