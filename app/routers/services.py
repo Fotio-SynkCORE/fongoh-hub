@@ -102,14 +102,82 @@ async def boost(req: BoostRequest, authorization: str | None = Header(default=No
     }, req.package_name)
 
 
+def buy_account_sync(uid: str, req: BuyAccountRequest) -> str:
+    """Charges the wallet, takes 1 from the account's stock and saves the order.
+    All-or-nothing, and the price comes from the database, not from the browser."""
+    db = firestore.client()
+    user_ref = db.collection("users").document(uid)
+    acc_ref = db.collection("accounts").document(req.account_id)
+
+    @firestore.transactional
+    def run(txn):
+        user_snap = user_ref.get(transaction=txn)
+        acc_snap = acc_ref.get(transaction=txn)
+
+        if not user_snap.exists:
+            raise HTTPException(status_code=404, detail="User not found")
+        if not acc_snap.exists:
+            raise HTTPException(status_code=404, detail="This account is not available.")
+
+        acc = acc_snap.to_dict() or {}
+        stock = int(acc.get("stock") or 0)
+        price = int(acc.get("price") or 0)
+        title = acc.get("title") or req.title
+
+        if stock <= 0:
+            raise HTTPException(status_code=409, detail="Sorry, this account is sold out.")
+        if price <= 0:
+            raise HTTPException(status_code=409, detail="This account is not available.")
+        if req.price != price:
+            raise HTTPException(
+                status_code=409,
+                detail="The price has changed. Please refresh the page and try again.",
+            )
+
+        balance = float((user_snap.to_dict() or {}).get("balance") or 0)
+        if balance < price:
+            raise HTTPException(
+                status_code=400,
+                detail="Insufficient wallet balance. Please top up.",
+            )
+
+        order_ref = user_ref.collection("orders").document()
+        tx_ref = user_ref.collection("transactions").document()
+
+        txn.update(user_ref, {"balance": firestore.Increment(-price)})
+        txn.update(acc_ref, {"stock": firestore.Increment(-1)})
+        txn.set(order_ref, {
+            "type": "account",
+            "serviceName": title,
+            "accountId": req.account_id,
+            "price": price,
+            "currency": "XAF",
+            "status": "processing",
+            "createdAt": firestore.SERVER_TIMESTAMP,
+        })
+        txn.set(tx_ref, {
+            "type": "purchase",
+            "serviceName": title,
+            "amount": -price,
+            "status": "completed",
+            "createdAt": firestore.SERVER_TIMESTAMP,
+        })
+        return order_ref.id
+
+    return run(db.transaction())
+
+
 @router.post("/buy-account")
 async def buy_account(req: BuyAccountRequest, authorization: str | None = Header(default=None)):
     uid = get_uid(authorization)
-    return await charge(uid, req.price, {
-        "type": "account",
-        "serviceName": req.title,
-        "accountId": req.account_id,
-    }, req.title)
+    try:
+        order_id = await run_in_threadpool(buy_account_sync, uid, req)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("Buy account error:", repr(e))
+        raise HTTPException(status_code=500, detail="Could not complete the order.")
+    return {"status": "SUCCESS", "message": "Order placed", "order_id": order_id}
 
 
 # ------------------------------------------------------------------- eSIM
