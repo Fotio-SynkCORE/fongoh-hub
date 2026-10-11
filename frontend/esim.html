@@ -14,41 +14,70 @@
     --card-border: rgba(255, 255, 255, 0.08);
   }
   body { background:#0d1117; color:#f0f6fc; font-family:'Inter',sans-serif; }
+  h2.sec { font-family:'Space Grotesk',sans-serif; font-size:19px; margin:30px 0 6px; }
+  p.sub { margin:0 0 14px; font-size:13px; color:#9ca3af; line-height:1.5; }
 
-  .hero { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:18px; margin-bottom:14px; }
-  .hero h2 { margin:0 0 6px; font-size:22px; }
-  .hero p { margin:0 0 12px; font-size:13px; color:#9ca3af; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; }
-  .chip { font-size:12px; padding:6px 10px; border-radius:20px; background:rgba(16,185,129,0.15); color:#10B981; }
+  /* Hero */
+  .hero { background:linear-gradient(135deg, rgba(16,185,129,0.16), rgba(59,130,246,0.06)); border:1px solid rgba(16,185,129,0.25); border-radius:18px; padding:20px; margin-bottom:14px; }
+  .hero h2 { margin:0 0 6px; font-size:22px; font-family:'Space Grotesk',sans-serif; }
+  .hero p { margin:0; font-size:13px; color:#c4cad3; line-height:1.5; }
 
-  .notice { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); color:#F59E0B; border-radius:14px; padding:12px 14px; font-size:13px; margin-bottom:14px; }
+  /* Segmented switch */
+  .seg { display:flex; gap:8px; margin-bottom:14px; }
+  .seg button { flex:1; padding:11px; border-radius:12px; border:1px solid var(--card-border); background:var(--card-bg); color:#9ca3af; font-weight:600; font-size:14px; cursor:pointer; }
+  .seg button.active { background:var(--primary-emerald); color:#fff; border-color:var(--primary-emerald); }
+
+  .view { display:none; }
+  .view.active { display:block; }
+
+  .f { width:100%; box-sizing:border-box; padding:13px 14px; border-radius:12px; border:1px solid var(--card-border); background:rgba(0,0,0,0.3); color:#fff; font-size:14px; margin-bottom:12px; }
+
+  /* Scope tabs */
+  .tabs { display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; padding-bottom:2px; }
+  .tab { white-space:nowrap; padding:8px 16px; border-radius:20px; border:1px solid var(--card-border); background:var(--card-bg); color:#9ca3af; font-size:13px; font-weight:600; cursor:pointer; }
+  .tab.active { background:rgba(16,185,129,0.2); border-color:var(--primary-emerald); color:var(--primary-emerald); }
+
+  /* Destination cards */
+  .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+  .dest { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:16px; cursor:pointer; transition:.2s; }
+  .dest:hover { border-color:var(--primary-emerald); transform:translateY(-2px); }
+  .dest-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .dest-top img { width:40px; height:28px; border-radius:5px; object-fit:cover; }
+  .dest-name { font-weight:600; font-size:16px; flex:1; }
+  .badge { font-size:10px; padding:3px 8px; border-radius:20px; background:rgba(245,158,11,0.18); color:#F59E0B; font-weight:700; text-transform:uppercase; }
+  .meta { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .meta span { font-size:12px; background:rgba(255,255,255,0.06); padding:5px 9px; border-radius:8px; color:#d1d5db; }
+  .dest-bottom { display:flex; align-items:center; justify-content:space-between; }
+  .from { font-size:12px; color:#9ca3af; }
+  .from b { display:block; font-family:'Space Grotesk',sans-serif; font-size:17px; color:var(--primary-emerald); }
+  .btn { background:var(--primary-emerald); color:#fff; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:14px; cursor:pointer; }
+  .btn.wa { background:#25D366; width:100%; margin-top:8px; }
+  .btn.full { width:100%; }
+
+  .notice { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.4); color:#F59E0B; border-radius:14px; padding:13px 14px; font-size:13px; line-height:1.5; margin:18px 0; }
   .notice b { display:block; font-size:11px; letter-spacing:.5px; margin-bottom:4px; }
+  .notice a { color:#fbbf24; text-decoration:underline; cursor:pointer; }
 
-  .header-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; }
-  .tab-btn { flex:1; white-space:nowrap; padding:11px 10px; border-radius:12px; border:1px solid var(--card-border); background:var(--card-bg); color:#9ca3af; font-weight:600; font-size:13px; cursor:pointer; }
-  .tab-btn.active { background:var(--primary-emerald); color:#fff; border-color:var(--primary-emerald); }
-  .tab-content { display:none; }
-  .tab-content.active { display:block; }
+  .card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:14px; margin-bottom:10px; }
+  .card h4 { margin:0 0 4px; font-size:14px; }
+  .card p { margin:0; font-size:13px; color:#9ca3af; line-height:1.5; }
+  .step { display:flex; gap:12px; align-items:flex-start; }
+  .num { width:30px; height:30px; flex-shrink:0; border-radius:50%; background:var(--primary-emerald); display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { padding:8px 12px; border-radius:20px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); font-size:13px; }
 
-  .filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
-  .f { width:100%; box-sizing:border-box; padding:11px 12px; border-radius:10px; border:1px solid var(--card-border); background:rgba(0,0,0,0.3); color:#fff; font-size:14px; }
-  .f.full { grid-column:1/-1; }
-
-  .plan { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:16px; margin-bottom:12px; }
-  .plan-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-  .plan-country { display:flex; align-items:center; gap:10px; font-weight:600; font-size:16px; }
-  .plan-country img { width:34px; height:24px; border-radius:4px; object-fit:cover; }
-  .plan-price { font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--primary-emerald); font-size:16px; }
-  .plan-info { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
-  .plan-info div { background:rgba(255,255,255,0.05); border-radius:10px; padding:8px 10px; font-size:13px; font-weight:600; }
-  .plan-info span { display:block; font-size:11px; color:#9ca3af; font-weight:400; }
-  .buy-btn { width:100%; background:var(--primary-emerald); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:700; cursor:pointer; }
-  .wa-btn { background:#25D366; margin-top:8px; }
+  /* Detail view */
+  .crumbs { font-size:12px; color:#9ca3af; margin-bottom:12px; }
+  .crumbs a { color:var(--primary-emerald); cursor:pointer; }
+  .detail-head { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .detail-head img { width:54px; height:38px; border-radius:6px; object-fit:cover; }
+  .detail-head h2 { margin:0; font-size:22px; font-family:'Space Grotesk',sans-serif; }
+  .plan { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .plan-info b { font-size:16px; display:block; }
+  .plan-info span { font-size:12px; color:#9ca3af; }
+  .plan-price { font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--primary-emerald); text-align:right; margin-bottom:6px; }
   .status { font-size:12px; color:#F59E0B; text-transform:capitalize; }
   .msg { color:#9ca3af; text-align:center; padding:30px 0; font-size:14px; }
-  .faq-item { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:14px; margin-bottom:10px; }
-  .faq-item h4 { margin:0 0 6px; font-size:14px; }
-  .faq-item p { margin:0; font-size:13px; color:#9ca3af; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -66,43 +95,81 @@
 
 <main class="content" style="padding-bottom:100px; max-width:600px; margin:0 auto;">
 
-  <section class="hero">
-    <h2>Stay connected anywhere</h2>
-    <p>Affordable eSIMs for travel, business and everyday use. Easy activation.</p>
-    <div class="chips">
-      <span class="chip">✓ Many countries</span>
-      <span class="chip">✓ Fast delivery on WhatsApp</span>
-      <span class="chip">✓ Pay from your wallet</span>
-    </div>
-  </section>
-
-  <div class="notice"><b>IMPORTANT BEFORE PURCHASE</b>Mobile data only — no calls or SMS. Check that your phone supports eSIM and is carrier unlocked.</div>
-
-  <div class="header-tabs">
-    <button class="tab-btn active" data-tab="buy">Buy a new eSIM</button>
-    <button class="tab-btn" data-tab="mine">My eSIMs</button>
-    <button class="tab-btn" data-tab="history">Purchase history</button>
-    <button class="tab-btn" data-tab="faq">FAQ</button>
+  <div class="seg" id="mainSwitch">
+    <button class="active" data-view="store">Buy eSIM</button>
+    <button data-view="mine">My eSIMs</button>
   </div>
 
-  <section id="tab-buy" class="tab-content active">
-    <div class="filters">
-      <input class="f full" id="countrySearch" placeholder="🔍 Search country...">
-      <select class="f" id="minGb"></select>
-      <select class="f" id="minDays"></select>
+  <!-- ============ STORE ============ -->
+  <section id="view-store" class="view active">
+
+    <div class="hero">
+      <h2>Feel the freedom of data</h2>
+      <p>Pick your destination and get an eSIM for mobile data. No roaming bills and no SIM swaps. Prices are in FCFA and you pay from your wallet.</p>
     </div>
-    <div id="plansContainer"></div>
+
+    <input class="f" id="searchInput" placeholder="🔍 Search a country or region...">
+    <div class="tabs" id="scopeTabs"></div>
+
+    <h2 class="sec" id="gridTitle" style="margin-top:6px;">Destinations</h2>
+    <div class="grid" id="destGrid"></div>
+
+    <div class="notice">
+      <b>BEFORE YOU BUY</b>
+      Only buy an eSIM if you are in that country or travelling there. It connects to local networks, so it is no use anywhere else. All eSIMs here are mobile data only, with no calls or SMS.
+    </div>
+
+    <h2 class="sec">Why travellers choose Fongoh Hub eSIMs</h2>
+    <div class="card"><h4>Prices in FCFA</h4><p>No dollars and no conversions. You see the exact price before you buy.</p></div>
+    <div class="card"><h4>Pay from your wallet</h4><p>Top up with Orange Money or MTN MoMo, then pay for your eSIM in one tap.</p></div>
+    <div class="card"><h4>QR code on WhatsApp</h4><p>After payment you are sent to customer care on WhatsApp to receive your eSIM QR code.</p></div>
+
+    <h2 class="sec">How to add your eSIM</h2>
+    <p class="sub">Three quick steps. No SIM tray needed.</p>
+    <div class="card step"><div class="num">1</div><div><h4>Open your phone settings</h4><p>iPhone: Settings → Mobile Service. Android: Settings → Network &amp; internet → SIMs.</p></div></div>
+    <div class="card step"><div class="num">2</div><div><h4>Tap Add eSIM and scan your QR code</h4><p>Point your camera at the QR code you received, or choose to enter the details manually.</p></div></div>
+    <div class="card step"><div class="num">3</div><div><h4>Turn it on and enable data roaming</h4><p>Turn on the new line and switch on data roaming for it. When you arrive, your phone connects.</p></div></div>
+
+    <h2 class="sec">Check compatibility</h2>
+    <p class="sub">To use an eSIM your phone must meet all three conditions:</p>
+    <div class="card"><p>✓ The device supports eSIM.<br>✓ The device is not carrier or network locked.<br>✓ The device is not jailbroken (iPhone) or rooted (Android).</p></div>
+
+    <h2 class="sec">How you pay</h2>
+    <p class="sub">Top up your wallet, then pay for your eSIM from the wallet balance.</p>
+    <div class="chips"><span class="chip">Orange Money</span><span class="chip">MTN MoMo</span><span class="chip">Secured by Fapshi</span></div>
   </section>
 
-  <section id="tab-mine" class="tab-content"><div id="mineContainer"><p class="msg">Sign in to see your eSIMs.</p></div></section>
-  <section id="tab-history" class="tab-content"><div id="historyContainer"><p class="msg">Sign in to see your purchases.</p></div></section>
+  <!-- ============ DETAIL ============ -->
+  <section id="view-detail" class="view">
+    <div class="crumbs"><a id="crumbStore">eSIM Store</a> › <span id="crumbScope">Local eSIMs</span> › <span id="crumbName"></span></div>
 
-  <section id="tab-faq" class="tab-content">
-    <div class="faq-item"><h4>What is an eSIM?</h4><p>A digital SIM that is installed on your phone with a QR code. No plastic card needed.</p></div>
-    <div class="faq-item"><h4>Can I make calls or send SMS?</h4><p>No. These eSIMs give mobile data only.</p></div>
-    <div class="faq-item"><h4>Will it work on my phone?</h4><p>Your phone must support eSIM and be carrier unlocked. Check this before buying.</p></div>
-    <div class="faq-item"><h4>How do I get my eSIM?</h4><p>After you pay from your wallet, WhatsApp opens so you can receive your QR code. You can also find your order again under "My eSIMs".</p></div>
-    <div class="faq-item"><h4>How do I install it?</h4><p>On your phone open Settings, go to Mobile data / Cellular, choose Add eSIM, then scan the QR code you received.</p></div>
+    <div class="detail-head">
+      <img id="detailFlag" src="" alt="">
+      <h2 id="detailTitle"></h2>
+    </div>
+
+    <div class="notice" id="detailNotice"></div>
+
+    <h2 class="sec" style="margin-top:6px;">Choose a package</h2>
+    <div id="planList"></div>
+
+    <h2 class="sec">Package details</h2>
+    <div class="card"><h4>Data only</h4><p>This is a data-only plan. It keeps you online with mobile data for the validity period. It has no calls, no texts and no phone number.</p></div>
+    <div class="card"><h4>Activation</h4><p>You get the QR code on WhatsApp after payment. Install it any time before your trip.</p></div>
+
+    <div id="moreWrap">
+      <h2 class="sec">Need broader coverage?</h2>
+      <p class="sub">Other destinations you can choose from.</p>
+      <div class="grid" id="moreGrid"></div>
+    </div>
+
+    <h2 class="sec">Check compatibility</h2>
+    <div class="card"><p>To use an eSIM, your phone must support eSIM, not be carrier or network locked, and not be jailbroken or rooted. Please confirm this before you buy.</p></div>
+  </section>
+
+  <!-- ============ MY ESIMS ============ -->
+  <section id="view-mine" class="view">
+    <div id="mineContainer"><p class="msg">Sign in to see your eSIMs.</p></div>
   </section>
 
 </main>
