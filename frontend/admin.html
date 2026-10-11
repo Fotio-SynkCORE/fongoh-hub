@@ -38,6 +38,12 @@
 
   <div id="panel" style="display:none;">
     <section class="box">
+      <h3>Starter accounts</h3>
+      <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Loads the shop's existing accounts so you can edit their price and stock here. Do this once.</p>
+      <button class="btn" id="seedBtn" type="button" style="width:100%;">Load starter accounts</button>
+    </section>
+
+    <section class="box">
       <h3>Add an account</h3>
       <form id="addForm">
         <input class="f" id="newTitle" placeholder="Name (e.g. Netflix Premium)" required maxlength="80">
@@ -115,6 +121,16 @@ async function load() {
     listEl.appendChild(card);
   });
 }
+
+document.getElementById("seedBtn").addEventListener("click", async (e) => {
+  e.target.disabled = true;
+  try {
+    const r = await api("/seed-accounts", "POST");
+    alert(r.created ? `${r.created} accounts loaded.` : "Already loaded. Nothing new to add.");
+    load();
+  } catch (err) { alert(err.message); }
+  e.target.disabled = false;
+});
 
 document.getElementById("addForm").addEventListener("submit", async (e) => {
   e.preventDefault();
