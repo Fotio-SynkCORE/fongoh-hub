@@ -22,6 +22,38 @@
   .hero h2 { margin:0 0 6px; font-size:22px; font-family:'Space Grotesk',sans-serif; }
   .hero p { margin:0; font-size:13px; color:#c4cad3; line-height:1.5; }
 
+
+  /* Hero carousel */
+  .carousel { overflow:hidden; border-radius:22px; background:linear-gradient(160deg,#0b1a2e 0%,#0a2a24 100%); border:1px solid rgba(16,185,129,0.25); margin-bottom:18px; }
+  .slides { display:flex; transition:transform .5s ease; }
+  .slide { min-width:100%; box-sizing:border-box; padding:22px 18px 8px; text-align:center; }
+  .slide svg { width:100%; max-width:320px; height:auto; }
+  .slide h2 { font-family:'Space Grotesk',sans-serif; font-size:21px; line-height:1.25; margin:10px 0 8px; }
+  .slide p { font-size:13px; line-height:1.55; color:#b6c2d0; margin:0 6px 14px; }
+  .dots { display:flex; justify-content:center; gap:6px; padding:0 0 16px; }
+  .dot { width:8px; height:8px; border-radius:8px; background:rgba(255,255,255,0.25); border:none; padding:0; cursor:pointer; transition:.3s; }
+  .dot.active { width:26px; background:#10B981; }
+
+
+  /* Package selector + summary (detail page) */
+  .lbl { display:block; font-size:12px; color:#9ca3af; margin:8px 0 6px; }
+  .plan-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .opt { background:var(--card-bg); border:2px solid var(--card-border); border-radius:14px; padding:14px; cursor:pointer; text-align:left; color:#fff; font-family:inherit; }
+  .opt.sel { border-color:var(--primary-emerald); background:rgba(16,185,129,0.12); }
+  .opt b { display:block; font-size:17px; }
+  .opt span { display:block; font-size:12px; color:#9ca3af; margin-top:2px; }
+  .opt em { display:block; font-style:normal; font-weight:700; color:var(--primary-emerald); margin-top:8px; font-family:'Space Grotesk',sans-serif; }
+  .line { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--card-border); font-size:14px; }
+  .line span { color:#9ca3af; }
+  .line.total { border-bottom:none; }
+  .line.total b { font-size:21px; color:var(--primary-emerald); font-family:'Space Grotesk',sans-serif; }
+  .small { font-size:12px; color:#9ca3af; margin:10px 0 0; line-height:1.5; }
+  .tbl { width:100%; border-collapse:collapse; font-size:13px; }
+  .tbl td { padding:9px 0; border-bottom:1px solid var(--card-border); }
+  .tbl tr:last-child td { border-bottom:none; }
+  .tbl td:first-child { color:#9ca3af; }
+  .tbl td:last-child { text-align:right; font-weight:600; }
+
   /* Segmented switch */
   .seg { display:flex; gap:8px; margin-bottom:14px; }
   .seg button { flex:1; padding:11px; border-radius:12px; border:1px solid var(--card-border); background:var(--card-bg); color:#9ca3af; font-weight:600; font-size:14px; cursor:pointer; }
@@ -103,40 +135,98 @@
   <!-- ============ STORE ============ -->
   <section id="view-store" class="view active">
 
-    <div class="hero">
-      <h2>Feel the freedom of data</h2>
-      <p>Pick your destination and get an eSIM for mobile data. No roaming bills and no SIM swaps. Prices are in FCFA and you pay from your wallet.</p>
+    <div class="carousel" id="carousel">
+      <div class="slides" id="slides">
+
+        <div class="slide">
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <defs><linearGradient id="gGlobe" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient></defs>
+            <circle cx="160" cy="86" r="76" fill="none" stroke="#60a5fa" stroke-opacity=".35" stroke-dasharray="3 6"/>
+            <circle cx="160" cy="86" r="48" fill="url(#gGlobe)"/>
+            <path d="M128 74c9-11 26-9 33 0 6 8-3 15-13 13-11-2-24 2-20-13z" fill="#34d399"/>
+            <path d="M166 100c8-4 19 0 21 9 2 9-11 13-19 7-8-5-9-12-2-16z" fill="#34d399"/>
+            <ellipse cx="160" cy="146" rx="44" ry="6" fill="#000" opacity=".35"/>
+            <g transform="translate(236 70)">
+              <circle cx="17" cy="16" r="24" fill="#0b1220" stroke="#10B981" stroke-opacity=".5"/>
+              <rect x="5" y="5" width="24" height="20" rx="4" fill="#10B981"/>
+              <path d="M5 15h24M17 5v20" stroke="#0b1220" stroke-width="2"/>
+            </g>
+            <path d="M272 78a14 14 0 0 1 0 20M280 72a22 22 0 0 1 0 32" fill="none" stroke="#a7f3d0" stroke-width="3" stroke-linecap="round"/>
+            <path d="M92 134l24-8-6 12z" fill="#ffffff"/>
+            <circle cx="58" cy="40" r="2" fill="#93c5fd"/><circle cx="264" cy="28" r="2" fill="#93c5fd"/>
+            <path d="M50 104h8M54 100v8" stroke="#60a5fa" stroke-width="2"/>
+          </svg>
+          <h2>Going somewhere? Get your data sorted</h2>
+          <p>Pick your destination, pay from your wallet and get an eSIM for mobile data. No SIM card to swap.</p>
+        </div>
+
+        <div class="slide">
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <g transform="translate(70 0)">
+              <path d="M-30 150c0-34 14-56 30-56s30 22 30 56z" fill="#60a5fa"/>
+              <circle cx="0" cy="68" r="17" fill="#7c4a2d"/>
+              <path d="M-19 60c4-18 34-18 38 0-10-6-28-6-38 0z" fill="#1f1308"/>
+              <rect x="-12" y="104" width="24" height="34" rx="4" fill="#0b1220"/>
+              <rect x="-9" y="108" width="18" height="24" rx="2" fill="#93c5fd"/>
+              <path d="M-14 98a15 15 0 0 1 28 0" fill="none" stroke="#a7f3d0" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="-14" y="150" width="10" height="24" rx="3" fill="#172554"/><rect x="4" y="150" width="10" height="24" rx="3" fill="#172554"/>
+            </g>
+            <g transform="translate(160 0)">
+              <path d="M-32 150c0-38 15-62 32-62s32 24 32 62z" fill="#10B981"/>
+              <circle cx="0" cy="62" r="18" fill="#f2c9a0"/>
+              <path d="M-18 56a18 18 0 0 1 36 0z" fill="#3b82f6"/><circle cx="0" cy="36" r="4" fill="#93c5fd"/>
+              <rect x="-13" y="102" width="26" height="36" rx="4" fill="#0b1220"/>
+              <rect x="-10" y="106" width="20" height="26" rx="2" fill="#6ee7b7"/>
+              <path d="M-15 96a16 16 0 0 1 30 0" fill="none" stroke="#a7f3d0" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="-15" y="150" width="11" height="24" rx="3" fill="#172554"/><rect x="4" y="150" width="11" height="24" rx="3" fill="#172554"/>
+            </g>
+            <g transform="translate(250 0)">
+              <path d="M-30 150c0-34 14-56 30-56s30 22 30 56z" fill="#93c5fd"/>
+              <circle cx="0" cy="68" r="17" fill="#c68642"/>
+              <path d="M-17 62c2-14 32-14 34 0-9-5-25-5-34 0z" fill="#8a3b12"/>
+              <rect x="-12" y="104" width="24" height="34" rx="4" fill="#0b1220"/>
+              <rect x="-9" y="108" width="18" height="24" rx="2" fill="#60a5fa"/>
+              <path d="M-14 98a15 15 0 0 1 28 0" fill="none" stroke="#a7f3d0" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="-14" y="150" width="10" height="24" rx="3" fill="#172554"/><rect x="4" y="150" width="10" height="24" rx="3" fill="#172554"/>
+            </g>
+          </svg>
+          <h2>Connected from the moment you land</h2>
+          <p>Travellers, freelancers and remote workers get data for their trip without roaming bills.</p>
+        </div>
+
+        <div class="slide">
+          <svg viewBox="0 0 320 180" aria-hidden="true">
+            <rect x="40" y="14" width="240" height="84" rx="10" fill="none" stroke="#60a5fa" stroke-opacity=".5" stroke-width="2"/>
+            <path d="M160 14v84" stroke="#60a5fa" stroke-opacity=".5" stroke-width="2"/>
+            <path d="M66 58l32-9 9 4-15 6 11 3-26 6z" fill="#e5e7eb"/>
+            <ellipse cx="112" cy="44" rx="16" ry="9" fill="#7dd3fc"/><ellipse cx="126" cy="48" rx="12" ry="7" fill="#7dd3fc"/>
+            <ellipse cx="226" cy="64" rx="15" ry="8" fill="#38bdf8" opacity=".7"/>
+            <rect x="58" y="116" width="204" height="40" rx="14" fill="#1d4ed8"/>
+            <rect x="70" y="104" width="30" height="50" rx="5" fill="#60a5fa"/>
+            <path d="M80 104v-9h10v9" stroke="#bfdbfe" stroke-width="3" fill="none"/>
+            <circle cx="138" cy="94" r="12" fill="#f2c9a0"/>
+            <path d="M120 140c0-22 8-34 18-34s18 12 18 34z" fill="#10B981"/>
+            <rect x="130" y="124" width="26" height="14" rx="2" fill="#0b1220"/>
+            <circle cx="214" cy="94" r="12" fill="#7c4a2d"/>
+            <path d="M194 140c0-22 9-34 20-34s20 12 20 34z" fill="#93c5fd"/>
+            <rect x="222" y="108" width="10" height="16" rx="2" fill="#0b1220"/>
+            <path d="M220 104a8 8 0 0 1 14 0" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <h2>More data, less worry</h2>
+          <p>Stream, chat and browse while you travel. Choose the package that fits your trip and see the price in FCFA.</p>
+        </div>
+
+      </div>
+      <div class="dots" id="dots"></div>
     </div>
 
     <input class="f" id="searchInput" placeholder="🔍 Search a country or region...">
-    <div class="tabs" id="scopeTabs"></div>
-
-    <h2 class="sec" id="gridTitle" style="margin-top:6px;">Destinations</h2>
+    <h2 class="sec" id="gridTitle" style="margin-top:6px;text-align:center;">Popular locations</h2>
+    <p class="sub" style="text-align:center;">Explore our eSIMs and pick the destination for your trip.</p>
+    <div class="tabs" id="scopeTabs" style="justify-content:center;"></div>
     <div class="grid" id="destGrid"></div>
 
-    <div class="notice">
-      <b>BEFORE YOU BUY</b>
-      Only buy an eSIM if you are in that country or travelling there. It connects to local networks, so it is no use anywhere else. All eSIMs here are mobile data only, with no calls or SMS.
-    </div>
-
-    <h2 class="sec">Why travellers choose Fongoh Hub eSIMs</h2>
-    <div class="card"><h4>Prices in FCFA</h4><p>No dollars and no conversions. You see the exact price before you buy.</p></div>
-    <div class="card"><h4>Pay from your wallet</h4><p>Top up with Orange Money or MTN MoMo, then pay for your eSIM in one tap.</p></div>
-    <div class="card"><h4>QR code on WhatsApp</h4><p>After payment you are sent to customer care on WhatsApp to receive your eSIM QR code.</p></div>
-
-    <h2 class="sec">How to add your eSIM</h2>
-    <p class="sub">Three quick steps. No SIM tray needed.</p>
-    <div class="card step"><div class="num">1</div><div><h4>Open your phone settings</h4><p>iPhone: Settings → Mobile Service. Android: Settings → Network &amp; internet → SIMs.</p></div></div>
-    <div class="card step"><div class="num">2</div><div><h4>Tap Add eSIM and scan your QR code</h4><p>Point your camera at the QR code you received, or choose to enter the details manually.</p></div></div>
-    <div class="card step"><div class="num">3</div><div><h4>Turn it on and enable data roaming</h4><p>Turn on the new line and switch on data roaming for it. When you arrive, your phone connects.</p></div></div>
-
-    <h2 class="sec">Check compatibility</h2>
-    <p class="sub">To use an eSIM your phone must meet all three conditions:</p>
-    <div class="card"><p>✓ The device supports eSIM.<br>✓ The device is not carrier or network locked.<br>✓ The device is not jailbroken (iPhone) or rooted (Android).</p></div>
-
-    <h2 class="sec">How you pay</h2>
-    <p class="sub">Top up your wallet, then pay for your eSIM from the wallet balance.</p>
-    <div class="chips"><span class="chip">Orange Money</span><span class="chip">MTN MoMo</span><span class="chip">Secured by Fapshi</span></div>
+    <button class="btn full" id="browseAll" style="margin-top:14px;display:none;">Browse all destinations</button>
   </section>
 
   <!-- ============ DETAIL ============ -->
@@ -148,29 +238,76 @@
       <h2 id="detailTitle"></h2>
     </div>
 
+    <div class="chips" style="margin-bottom:12px;">
+      <span class="chip">Data only</span>
+      <span class="chip" id="scopeChip">Local eSIM</span>
+      <span class="chip">QR code on WhatsApp</span>
+    </div>
+
     <div class="notice" id="detailNotice"></div>
 
-    <h2 class="sec" style="margin-top:6px;">Choose a package</h2>
-    <div id="planList"></div>
+    <label class="lbl" for="changeDest">Change country or region</label>
+    <select class="f" id="changeDest"></select>
+
+    <h2 class="sec" style="margin-top:6px;">Choose your package</h2>
+    <div class="plan-grid" id="planList"></div>
+
+    <div class="card">
+      <div class="line"><span>Coverage</span><b id="sumCoverage"></b></div>
+      <div class="line"><span>Package</span><b id="sumPackage"></b></div>
+      <div class="line"><span>Pay in</span><b>Wallet (XAF)</b></div>
+      <div class="line total"><span>Total</span><b id="sumTotal">0 XAF</b></div>
+      <button class="btn full" id="buyNow" style="margin-top:6px;">Buy now</button>
+      <p class="small">To complete your order, confirm your device is eSIM-compatible and network-unlocked.</p>
+    </div>
 
     <h2 class="sec">Package details</h2>
+    <div class="card">
+      <table class="tbl">
+        <tr><td>Coverage</td><td id="tblCoverage"></td></tr>
+        <tr><td>Data</td><td id="tblData"></td></tr>
+        <tr><td>Calls</td><td>None</td></tr>
+        <tr><td>Texts</td><td>None</td></tr>
+        <tr><td>Validity</td><td id="tblDays"></td></tr>
+      </table>
+    </div>
     <div class="card"><h4>Data only</h4><p>This is a data-only plan. It keeps you online with mobile data for the validity period. It has no calls, no texts and no phone number.</p></div>
-    <div class="card"><h4>Activation</h4><p>You get the QR code on WhatsApp after payment. Install it any time before your trip.</p></div>
+    <div class="card"><h4>Delivery</h4><p>After payment you are sent to customer care on WhatsApp to receive your QR code. Ask them there if you need help installing it.</p></div>
 
     <div id="moreWrap">
       <h2 class="sec">Need broader coverage?</h2>
-      <p class="sub">Other destinations you can choose from.</p>
+      <p class="sub">Explore our regional and global eSIMs. Packages start from the shown price.</p>
       <div class="grid" id="moreGrid"></div>
     </div>
-
-    <h2 class="sec">Check compatibility</h2>
-    <div class="card"><p>To use an eSIM, your phone must support eSIM, not be carrier or network locked, and not be jailbroken or rooted. Please confirm this before you buy.</p></div>
   </section>
 
   <!-- ============ MY ESIMS ============ -->
   <section id="view-mine" class="view">
     <div id="mineContainer"><p class="msg">Sign in to see your eSIMs.</p></div>
   </section>
+
+
+  <div id="sharedInfo">
+    <h2 class="sec">Why travellers choose Fongoh Hub eSIMs</h2>
+        <div class="card"><h4>Prices in FCFA</h4><p>No dollars and no conversions. You see the exact price before you buy.</p></div>
+        <div class="card"><h4>Pay from your wallet</h4><p>Top up with Orange Money or MTN MoMo, then pay for your eSIM in one tap.</p></div>
+        <div class="card"><h4>QR code on WhatsApp</h4><p>After payment you are sent to customer care on WhatsApp to receive your eSIM QR code.</p></div>
+    
+        <h2 class="sec">How to add your eSIM</h2>
+        <p class="sub">Three quick steps. No SIM tray needed.</p>
+        <div class="card step"><div class="num">1</div><div><h4>Open your phone settings</h4><p>iPhone: Settings → Mobile Service. Android: Settings → Network &amp; internet → SIMs.</p></div></div>
+        <div class="card step"><div class="num">2</div><div><h4>Tap Add eSIM and scan your QR code</h4><p>Point your camera at the QR code you received, or choose to enter the details manually.</p></div></div>
+        <div class="card step"><div class="num">3</div><div><h4>Turn it on and enable data roaming</h4><p>Turn on the new line and switch on data roaming for it. When you arrive, your phone connects.</p></div></div>
+    
+        <h2 class="sec">Check compatibility</h2>
+        <p class="sub">To use an eSIM your phone must meet all three conditions:</p>
+        <div class="card"><p>✓ The device supports eSIM.<br>✓ The device is not carrier or network locked.<br>✓ The device is not jailbroken (iPhone) or rooted (Android).</p></div>
+    
+        <h2 class="sec">How you pay</h2>
+        <p class="sub">Top up your wallet, then pay for your eSIM from the wallet balance.</p>
+        <div class="chips"><span class="chip">Orange Money</span><span class="chip">MTN MoMo</span><span class="chip">Secured by Fapshi</span></div>
+    
+  </div>
 
 </main>
 
@@ -253,6 +390,42 @@
   </a>
 </div>
 
+<script>
+(function () {
+  var track = document.getElementById("slides");
+  var dotsBox = document.getElementById("dots");
+  var count = track.children.length, index = 0, timer = null, startX = null;
+
+  for (var i = 0; i < count; i++) {
+    (function (n) {
+      var d = document.createElement("button");
+      d.className = "dot" + (n === 0 ? " active" : "");
+      d.setAttribute("aria-label", "Slide " + (n + 1));
+      d.onclick = function () { go(n); restart(); };
+      dotsBox.appendChild(d);
+    })(i);
+  }
+
+  function go(n) {
+    index = (n + count) % count;
+    track.style.transform = "translateX(-" + index * 100 + "%)";
+    for (var k = 0; k < dotsBox.children.length; k++) {
+      dotsBox.children[k].classList.toggle("active", k === index);
+    }
+  }
+  function restart() { clearInterval(timer); timer = setInterval(function () { go(index + 1); }, 4500); }
+
+  track.addEventListener("touchstart", function (e) { startX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener("touchend", function (e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) { go(index + (dx < 0 ? 1 : -1)); restart(); }
+    startX = null;
+  });
+
+  restart();
+})();
+</script>
 <script type="module" src="esim.js"></script>
 </body>
 </html>
