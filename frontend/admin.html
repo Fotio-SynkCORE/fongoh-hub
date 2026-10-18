@@ -38,6 +38,25 @@
 
   <div id="panel" style="display:none;">
     <section class="box">
+      <h3>Grizzly check (setup)</h3>
+      <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Shows the real countries, codes and prices from Grizzly. Read only: it cannot buy anything.</p>
+      <select class="f" id="gAction">
+        <option value="getBalance">Balance</option>
+        <option value="getCountries">Countries list</option>
+        <option value="getServicesList">Services list</option>
+        <option value="getPrices">Prices</option>
+        <option value="getNumbersStatus">Numbers in stock (needs country)</option>
+      </select>
+      <div class="row">
+        <input class="f" id="gService" placeholder="Service code (e.g. fb)">
+        <input class="f" id="gCountry" placeholder="Country code (optional)">
+      </div>
+      <button class="btn" id="gRun" type="button" style="width:100%;">Run check</button>
+      <textarea class="f" id="gOut" readonly rows="8" style="margin-top:10px;font-size:12px;" placeholder="The result appears here"></textarea>
+      <button class="btn" id="gCopy" type="button" style="width:100%;background:#374151;">Copy result</button>
+    </section>
+
+    <section class="box">
       <h3>Starter accounts</h3>
       <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Loads the shop's existing accounts so you can edit their price and stock here. Do this once.</p>
       <button class="btn" id="seedBtn" type="button" style="width:100%;">Load starter accounts</button>
@@ -62,7 +81,7 @@
 
 <script type="module">
 import { auth } from "./firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const API = "https://fongoh-hub-production.up.railway.app/api/admin";
 const statusEl = document.getElementById("status");
@@ -122,6 +141,28 @@ async function load() {
   });
 }
 
+document.getElementById("gRun").addEventListener("click", async (e) => {
+  e.target.disabled = true;
+  const out = document.getElementById("gOut");
+  out.value = "Loading...";
+  try {
+    const q = new URLSearchParams({ action: document.getElementById("gAction").value });
+    const s = document.getElementById("gService").value.trim();
+    const c = document.getElementById("gCountry").value.trim();
+    if (s) q.set("service", s);
+    if (c) q.set("country", c);
+    const r = await api("/grizzly?" + q.toString());
+    out.value = r.body;
+  } catch (err) { out.value = err.message; }
+  e.target.disabled = false;
+});
+
+document.getElementById("gCopy").addEventListener("click", async () => {
+  const text = document.getElementById("gOut").value;
+  try { await navigator.clipboard.writeText(text); alert("Copied. Paste it in the chat."); }
+  catch { document.getElementById("gOut").select(); alert("Select all and copy it by hand."); }
+});
+
 document.getElementById("seedBtn").addEventListener("click", async (e) => {
   e.target.disabled = true;
   try {
@@ -159,8 +200,23 @@ onAuthStateChanged(auth, async (user) => {
     panel.style.display = "block";
   } catch (err) {
     statusEl.style.display = "block";
-    statusEl.textContent = err.message === "Not allowed." ? "This page is for admins only." : err.message;
     panel.style.display = "none";
+    if (err.message === "Not allowed.") {
+      statusEl.innerHTML =
+        `This page is for admins only.<br><br>You are signed in as <b>${esc(user.email)}</b><br>` +
+        `Email verified: <b>${user.emailVerified ? "yes" : "no"}</b>` +
+        (user.emailVerified
+          ? `<br><br>If this is the right email, tell your developer.`
+          : `<br><br><button class="btn" id="verifyBtn" type="button">Send verification email</button>`);
+      document.getElementById("verifyBtn")?.addEventListener("click", async () => {
+        try {
+          await sendEmailVerification(user);
+          alert("Verification email sent. Open it, tap the link, then come back here and refresh.");
+        } catch (e) { alert(e.message); }
+      });
+    } else {
+      statusEl.textContent = err.message;
+    }
   }
 });
 </script>
