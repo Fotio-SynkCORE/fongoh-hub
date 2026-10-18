@@ -12,7 +12,7 @@ onAuthStateChanged(auth, (user) => {
   list.querySelector("[data-admin-link]")?.remove();
 
   const email = (user?.email || "").toLowerCase();
-  if (!user || !user.emailVerified || !ADMIN_EMAILS.includes(email)) return;
+  if (!user || !ADMIN_EMAILS.includes(email)) return;
 
   const item = document.createElement("li");
   item.setAttribute("data-admin-link", "1");
