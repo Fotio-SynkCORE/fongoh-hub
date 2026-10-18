@@ -256,7 +256,11 @@ async def buy_number(req: BuyNumberRequest, authorization: str | None = Header(d
         )
     if text.startswith("NO_BALANCE") or text.startswith("BAD_KEY"):
         print("!!! CHECK THE GRIZZLY ACCOUNT: balance or API key problem")
-    reason = "".join(ch for ch in text.split(":")[0] if ch.isalnum() or ch == "_")[:30] or "UNKNOWN"
+    if text.startswith("SERVICE_UNAVAILABLE_REGION"):
+        print("!!! GRIZZLY BLOCKS THE SERVER REGION: ask Grizzly support or change the Railway region")
+    if "prohibited" in text.lower():
+        print("!!! GRIZZLY DOES NOT SELL THIS SERVICE:", req.service_slug)
+    reason = "".join(ch for ch in text.split(":")[0] if ch.isalnum() or ch in "_ .")[:70].strip() or "UNKNOWN"
     raise HTTPException(
         status_code=503,
         detail=f"Numbers are temporarily unavailable ({reason}). You were not charged.",
